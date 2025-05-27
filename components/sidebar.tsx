@@ -41,7 +41,7 @@ export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, setShowCompose 
           {!sidebarCollapsed && (
             <div className="flex items-center space-x-2 transition-all duration-300 ease-in-out">
               <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                MailSync
+              L4smartMail
               </span>
               <Badge variant="secondary" className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs">
                 AI
