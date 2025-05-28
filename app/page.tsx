@@ -1,15 +1,17 @@
 "use client"
 
 import { useEffect } from "react"
-import { Sidebar } from "@/components/sidebar"
-import { Header } from "@/components/header"
-import { EmailList } from "@/components/email-list"
-import { ComposeModal } from "@/components/compose-modal"
-import { CategoryFilters } from "@/components/category-filters"
-import { ScrollToTop } from "@/components/scroll-to-top"
+import { Sidebar } from "@/components/layout/sidebar"
+import { Header } from "@/components/layout/header"
+import { EmailList } from "@/components/email/email-list"
+import { ComposeModal } from "@/components/email/compose-modal"
+import { CategoryFilters } from "@/components/email/category-filters"
+import { ScrollToTop } from "@/components/common/scroll-to-top"
+import { EmailDetailModal } from "@/components/email/detail/email-detail-modal"
 import { useEmailStore } from "@/hooks/use-email-store"
 import { emails, emailCategories } from "@/data/email-data"
 import { filterEmails } from "@/utils/email-utils"
+import CalendarPage from "../calendar/page"
 
 export default function MailSyncClient() {
   const {
@@ -25,6 +27,9 @@ export default function MailSyncClient() {
     showScrollTop,
     animationSpeed,
     layoutTransitioning,
+    currentPage,
+    selectedEmailId,
+    showEmailDetail,
     setIsDarkMode,
     setSelectedCategory,
     setSearchQuery,
@@ -33,11 +38,14 @@ export default function MailSyncClient() {
     setSidebarCollapsed,
     setShowScrollTop,
     setAnimationSpeed,
+    setCurrentPage,
     toggleEmailSelection,
     selectAllEmails,
     clearSelection,
     handleRefresh,
     handleLayoutChange,
+    openEmailDetail,
+    closeEmailDetail,
   } = useEmailStore()
 
   useEffect(() => {
@@ -49,36 +57,32 @@ export default function MailSyncClient() {
   }, [setShowScrollTop])
 
   const filteredEmails = filterEmails(emails, selectedCategory, searchQuery)
+  const selectedEmail = selectedEmailId ? emails.find((email) => email.id === selectedEmailId) : null
 
-  return (
-    <div
-      className={`min-h-screen transition-all duration-700 ease-in-out ${isDarkMode ? "dark bg-gradient-to-br from-gray-900 to-slate-900" : "bg-gray-50"}`}
-    >
-      <div className="flex h-screen relative">
-        <Sidebar
-          sidebarCollapsed={sidebarCollapsed}
-          setSidebarCollapsed={setSidebarCollapsed}
-          setShowCompose={setShowCompose}
-        />
-
-        {/* Mobile Overlay */}
-        {!sidebarCollapsed && (
-          <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setSidebarCollapsed(true)} />
-        )}
-
-        <div className="flex-1 flex flex-col min-w-0">
-          <Header
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            isDarkMode={isDarkMode}
-            setIsDarkMode={setIsDarkMode}
-            handleLayoutChange={handleLayoutChange}
-            viewDensity={viewDensity}
-            setViewDensity={setViewDensity}
-            animationSpeed={animationSpeed}
-            setAnimationSpeed={setAnimationSpeed}
-          />
-
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case "calendar":
+        return <CalendarPage />
+      case "tasks":
+        return (
+          <div className="p-4 sm:p-6">
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent mb-2">
+              Tasks
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400">Task management coming soon...</p>
+          </div>
+        )
+      case "insights":
+        return (
+          <div className="p-4 sm:p-6">
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent mb-2">
+              Insights
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400">Analytics and insights coming soon...</p>
+          </div>
+        )
+      default:
+        return (
           <div className="flex-1 p-4 sm:p-6 overflow-auto">
             <div className="max-w-7xl mx-auto">
               <div className="mb-6 transition-all duration-500 ease-in-out">
@@ -109,14 +113,47 @@ export default function MailSyncClient() {
                 animationSpeed={animationSpeed}
                 layoutTransitioning={layoutTransitioning}
                 onToggleEmailSelection={toggleEmailSelection}
+                onOpenEmailDetail={openEmailDetail}
               />
             </div>
           </div>
+        )
+    }
+  }
+
+  return (
+    <div
+      className={`min-h-screen transition-all duration-700 ease-in-out ${isDarkMode ? "dark bg-gradient-to-br from-gray-900 to-slate-900" : "bg-gray-50"}`}
+    >
+      <div className="flex h-screen">
+        <Sidebar
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+          setShowCompose={setShowCompose}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+        />
+
+        <div className="flex-1 flex flex-col min-w-0">
+          <Header
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            isDarkMode={isDarkMode}
+            setIsDarkMode={setIsDarkMode}
+            handleLayoutChange={handleLayoutChange}
+            viewDensity={viewDensity}
+            setViewDensity={setViewDensity}
+            animationSpeed={animationSpeed}
+            setAnimationSpeed={setAnimationSpeed}
+          />
+
+          {renderCurrentPage()}
         </div>
       </div>
 
       <ScrollToTop showScrollTop={showScrollTop} />
       <ComposeModal showCompose={showCompose} setShowCompose={setShowCompose} />
+      <EmailDetailModal email={selectedEmail ?? null} isOpen={showEmailDetail} onClose={closeEmailDetail} />
 
       <style jsx global>{`
         @keyframes fade-in {

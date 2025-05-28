@@ -11,6 +11,25 @@ export interface Email {
   isStarred: boolean
   isRead: boolean
   priority: "urgent" | "high" | "medium" | "low"
+  fullContent?: string
+  attachments?: EmailAttachment[]
+  recipients?: EmailRecipient[]
+  timestamp?: string
+  labels?: string[]
+}
+
+export interface EmailAttachment {
+  id: string
+  name: string
+  size: string
+  type: string
+  url?: string
+}
+
+export interface EmailRecipient {
+  email: string
+  name: string
+  type: "to" | "cc" | "bcc"
 }
 
 export interface EmailCategory {

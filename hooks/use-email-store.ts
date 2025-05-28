@@ -16,6 +16,9 @@ export const useEmailStore = () => {
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [animationSpeed, setAnimationSpeed] = useState([1])
   const [layoutTransitioning, setLayoutTransitioning] = useState(false)
+  const [currentPage, setCurrentPage] = useState<"email" | "calendar" | "tasks" | "insights">("email")
+  const [selectedEmailId, setSelectedEmailId] = useState<number | null>(null)
+  const [showEmailDetail, setShowEmailDetail] = useState(false)
 
   const toggleEmailSelection = (emailId: number) => {
     setSelectedEmails((prev) => (prev.includes(emailId) ? prev.filter((id) => id !== emailId) : [...prev, emailId]))
@@ -43,6 +46,16 @@ export const useEmailStore = () => {
     }, 150)
   }
 
+  const openEmailDetail = (emailId: number) => {
+    setSelectedEmailId(emailId)
+    setShowEmailDetail(true)
+  }
+
+  const closeEmailDetail = () => {
+    setSelectedEmailId(null)
+    setShowEmailDetail(false)
+  }
+
   return {
     // State
     isDarkMode,
@@ -57,6 +70,9 @@ export const useEmailStore = () => {
     showScrollTop,
     animationSpeed,
     layoutTransitioning,
+    currentPage,
+    selectedEmailId,
+    showEmailDetail,
 
     // Setters
     setIsDarkMode,
@@ -67,6 +83,7 @@ export const useEmailStore = () => {
     setSidebarCollapsed,
     setShowScrollTop,
     setAnimationSpeed,
+    setCurrentPage,
 
     // Actions
     toggleEmailSelection,
@@ -74,5 +91,7 @@ export const useEmailStore = () => {
     clearSelection,
     handleRefresh,
     handleLayoutChange,
+    openEmailDetail,
+    closeEmailDetail,
   }
 }
