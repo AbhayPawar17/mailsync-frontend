@@ -6,7 +6,7 @@ import type { ApiResponse, ApiTask, Task, TaskColumn } from "@/types/task"
 const API_URL = "https://mailsync.l4it.net/api/allmessages"
 const UPDATE_API_URL = "https://mailsync.l4it.net/api/update_mail"
 const SEARCH_API_URL = "https://mailsync.l4it.net/api/search"
-const API_TOKEN = "64|aj6FpRSPLyIlelDcOHJiRHpLG54iXPzlfdBcQySaddc8e888"
+const API_TOKEN = "69|CMhCMlrzQ95hvSG09M7n7Pr30imrP3ZtscU85NYZ30534b3d"
 
 // Transform API task to internal task format
 const transformApiTask = (apiTask: ApiTask): Task => {
@@ -17,6 +17,7 @@ const transformApiTask = (apiTask: ApiTask): Task => {
     priority: apiTask.priority,
     status: "To Do", // Default status, not used for columns anymore
     dueDate: apiTask.due_at !== "NA" ? apiTask.due_at : undefined,
+    created_at: apiTask.created_at,
     assignedTo: apiTask.from_name,
     category: apiTask.category,
     sentimental: apiTask.sentimental,
@@ -167,41 +168,55 @@ export const useTasks = () => {
     fetchTasks()
   }, [])
 
-  const getTaskColumns = (): TaskColumn[] => {
-    // Get unique categories from tasks, filtering out undefined values
-    const categories = Array.from(new Set(tasks.map((task) => task.category).filter((category): category is string => Boolean(category))))
+const getTaskColumns = (): TaskColumn[] => {
+  // Get unique categories from tasks, filtering out undefined values
+  const categories = Array.from(new Set(tasks.map((task) => task.category).filter((category): category is string => Boolean(category))))
 
-    // If no categories, use a default
-    if (categories.length === 0) {
-      categories.push("Uncategorized")
-    }
-
-    return categories.map((category) => {
-      const categoryTasks = tasks
-        .filter((task) => task.category === category || (!task.category && category === "Uncategorized"))
-        .sort((a, b) => {
-          // Define priority order: Critical > High > Medium > Low
-          const priorityOrder = { Critical: 0, High: 1, Medium: 2, Low: 3 }
-          const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] ?? 4
-          const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] ?? 4
-
-          // Sort by priority first, then by creation date if available
-          if (aPriority !== bPriority) {
-            return aPriority - bPriority
-          }
-
-          // Secondary sort by title alphabetically if priorities are the same
-          return a.title.localeCompare(b.title)
-        })
-
-      return {
-        id: category.toLowerCase().replace(/\s+/g, "-"),
-        title: category,
-        count: categoryTasks.length,
-        tasks: categoryTasks,
-      }
-    })
+  // If no categories, use a default
+  if (categories.length === 0) {
+    categories.push("Uncategorized")
   }
+
+  return categories.map((category) => {
+    const categoryTasks = tasks
+      .filter((task) => task.category === category || (!task.category && category === "Uncategorized"))
+      .sort((a, b) => {
+        // Primary sort: by created_at (latest first)
+        if (a.created_at && b.created_at) {
+          const dateA = new Date(a.created_at).getTime()
+          const dateB = new Date(b.created_at).getTime()
+          
+          // Sort by latest first (descending order)
+          if (dateA !== dateB) {
+            return dateB - dateA
+          }
+        }
+        
+        // Handle cases where one or both dates are missing
+        if (a.created_at && !b.created_at) return -1
+        if (!a.created_at && b.created_at) return 1
+        
+        // Secondary sort: by priority if dates are the same or missing
+        const priorityOrder = { Critical: 0, High: 1, Medium: 2, Low: 3 }
+        const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] ?? 4
+        const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] ?? 4
+
+        if (aPriority !== bPriority) {
+          return aPriority - bPriority
+        }
+
+        // Tertiary sort: by title alphabetically if priorities are the same
+        return a.title.localeCompare(b.title)
+      })
+
+    return {
+      id: category.toLowerCase().replace(/\s+/g, "-"),
+      title: category,
+      count: categoryTasks.length,
+      tasks: categoryTasks,
+    }
+  })
+}
 
   const refreshTasks = () => {
     fetchTasks()

@@ -4,6 +4,7 @@ export interface Meeting {
   type: "Personal" | "Work" | "Important"
   time: string
   endTime?: string
+  actionLink?: string
   location?: string
   attendees: number
   description: string

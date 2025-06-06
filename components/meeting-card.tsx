@@ -55,10 +55,10 @@ export function MeetingCard({ meeting, index }: MeetingCardProps) {
             </div>
           )}
 
-          {meeting.isVirtual && (
+          {meeting.actionLink && (
             <div className="flex items-center text-sm text-blue-600 dark:text-blue-400">
               <Video className="w-4 h-4 mr-2" />
-              {meeting.virtualLink}
+              {meeting.actionLink}
             </div>
           )}
 

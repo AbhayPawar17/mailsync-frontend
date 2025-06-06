@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Textarea } from "@/components/ui/textarea"
 import type { Task } from "@/types/task"
+import Link from "next/link"
 
 interface TaskDetailModalProps {
   task: Task | null | undefined
@@ -122,6 +123,25 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
                 <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300">{task.description}</p>
               </div>
             </div>
+
+           {task.actionLink && (
+  <div className="space-y-4">
+    <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center">
+      <MessageSquare className="w-5 h-5 mr-3 text-blue-500" />
+      Meeting Link
+    </h3>
+    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 sm:p-6 border border-slate-200/50 dark:border-slate-700/50">
+      <Link 
+        href={task.actionLink} 
+        className="text-base sm:text-lg text-slate-700 dark:text-slate-300"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {task.actionLink}
+      </Link>
+    </div>
+  </div>
+)}
 
             {/* Email Response Section */}
 <div className="space-y-4">

@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation"
 import AIEmailLandingPage from "./landing-page/page"
 import TaskManagementApp from "./dashboard/page"
+import SyncMail from "./sync-mail/page";
 
 export default function App() {
 
@@ -15,6 +16,10 @@ export default function App() {
 
     {pathname === "/dashboard" && ( 
       <TaskManagementApp/>)}
+
+    {pathname === "/sync-mail" && (
+      <SyncMail/>
+    )}
     </>
   )
 }

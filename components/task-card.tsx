@@ -68,7 +68,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
       className={`mb-2 cursor-pointer hover:shadow-md transition-all duration-300 hover:scale-[1.01] transform border-l-4 ${getPriorityColor(task.priority)}`}
       onClick={onClick}
     >
-<CardContent className="pt-0 pb-0 px-2">
+      <CardContent className="pt-0 pb-0 px-2">
         <div className="flex items-start justify-between mb-1">
           <h3 className="font-semibold text-slate-900 dark:text-white text-sm leading-snug pr-2">
             {task.title}
@@ -90,20 +90,22 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
           </Badge>
         )}
 
-        <div className="flex items-center justify-between text-xs mt-1">
-          {task.fromName && (
-            <div className="flex items-center text-slate-600 dark:text-slate-400">
-              <User className="w-3 h-3 mr-1 text-purple-500" />
-              <span>{task.fromName}</span>
-            </div>
-          )}
-
-          {task?.created_at && (
-            <div className="flex items-center text-slate-600 dark:text-slate-400">
-              <Tag className="w-3 h-3 mr-1 text-yellow-500" />
-              <span>{new Date(task.created_at).toLocaleDateString()}</span>
-            </div>
-          )}
+        <div className="flex items-start justify-between text-xs mt-1">
+          <div className="flex flex-col gap-1">
+            {task.fromName && (
+              <div className="flex items-center text-slate-600 dark:text-slate-400">
+                <User className="w-3 h-3 mr-1 text-purple-500" />
+                <span>{task.fromName}</span>
+              </div>
+            )}
+            
+            {task?.created_at && (
+              <div className="flex items-center text-slate-600 dark:text-slate-400">
+                <Calendar className="w-3 h-3 mr-1 text-yellow-500" />
+                <span>{new Date(task.created_at).toLocaleDateString()}</span>
+              </div>
+            )}
+          </div>
 
           {task.fromEmail && (
             <div className="flex items-center text-slate-600 dark:text-slate-400">
