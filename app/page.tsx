@@ -6,7 +6,7 @@ import TaskManagementApp from "./dashboard/page"
 
 export default function App() {
 
-  const pathname = usePathname();
+    const pathname = usePathname();
 
   return (
     <>
