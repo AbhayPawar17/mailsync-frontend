@@ -30,11 +30,24 @@ export function KanbanBoard() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [localSearchQuery, setLocalSearchQuery] = useState("")
 
+  // Enhanced task selection with better error handling
   const selectedTask = selectedTaskId ? tasks.find((task) => task.id === selectedTaskId) : null
 
   const handleTaskClick = (taskId: string) => {
-    setSelectedTaskId(taskId)
-    setShowTaskDetail(true)
+    console.log("Task clicked:", taskId)
+    const task = tasks.find((t) => t.id === taskId)
+    if (task) {
+      console.log("Selected task details:", {
+        id: task.id,
+        title: task.title,
+        graphId: task.graphId,
+        hasGraphId: !!task.graphId
+      })
+      setSelectedTaskId(taskId)
+      setShowTaskDetail(true)
+    } else {
+      console.error("Task not found:", taskId)
+    }
   }
 
   const closeTaskDetail = () => {
@@ -64,6 +77,15 @@ export function KanbanBoard() {
   useEffect(() => {
     setLocalSearchQuery(searchQuery)
   }, [searchQuery])
+
+  // Debug effect to log task data
+  useEffect(() => {
+    if (tasks.length > 0) {
+      console.log("Tasks loaded:", tasks.length)
+      console.log("Sample task with graph_id:", tasks[0])
+      console.log("Tasks with graph_id:", tasks.filter(t => t.graphId).length)
+    }
+  }, [tasks])
 
   if (loading) {
     return (
@@ -188,7 +210,7 @@ export function KanbanBoard() {
       </div>
 
       {/* Kanban Board */}
-<div className="pt-6 pr-6 pb-6 pl-2 overflow-auto h-full">
+      <div className="pt-6 pr-6 pb-6 pl-2 overflow-auto h-full">
         {taskColumns.length > 0 ? (
           <div className="flex space-x-2 min-w-max pb-8">
             {taskColumns.map((column) => (
@@ -207,7 +229,21 @@ export function KanbanBoard() {
         )}
       </div>
 
-      <TaskDetailModal task={selectedTask} isOpen={showTaskDetail} onClose={closeTaskDetail} />
+      {/* Task Detail Modal with enhanced debugging */}
+      <TaskDetailModal 
+        task={selectedTask} 
+        isOpen={showTaskDetail} 
+        onClose={closeTaskDetail} 
+      />
+
+      {/* Debug info in development */}
+      {process.env.NODE_ENV === 'development' && selectedTask && (
+        <div className="fixed bottom-4 right-4 bg-black/80 text-white p-2 rounded text-xs max-w-xs">
+          <div>Selected Task ID: {selectedTask.id}</div>
+          <div>Graph ID: {selectedTask.graphId || 'Not available'}</div>
+          <div>Has Graph ID: {selectedTask.graphId ? '✅' : '❌'}</div>
+        </div>
+      )}
 
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {

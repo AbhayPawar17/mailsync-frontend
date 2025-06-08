@@ -2,13 +2,40 @@
 
 import { PieChart } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { CategoryData } from "@/types/insights"
+import { useTasks } from "@/hooks/use-tasks" // Import your tasks hook
 
-interface CategoryChartProps {
-  data: CategoryData[]
+interface CategoryData {
+  label: string
+  value: number
+  color: string
 }
 
-export function CategoryChart({ data }: CategoryChartProps) {
+export function CategoryChart() {
+  const { taskColumns } = useTasks()
+
+  // Transform task columns into category data for the chart
+  const getCategoryData = (): CategoryData[] => {
+    // Define a color palette for categories
+    const colors = [
+      "#3b82f6", // blue-500
+      "#f87171", // red-400
+      "#10b981", // emerald-500
+      "#f59e0b", // amber-500
+      "#8b5cf6", // violet-500
+      "#ec4899", // pink-500
+      "#14b8a6", // teal-500
+      "#f97316", // orange-500
+      "#64748b", // slate-500
+    ]
+
+    return taskColumns.map((column, index) => ({
+      label: column.title,
+      value: column.count,
+      color: colors[index % colors.length] // Cycle through colors if more categories than colors
+    }))
+  }
+
+  const data = getCategoryData()
   const total = data.reduce((sum, item) => sum + item.value, 0)
   let cumulativePercentage = 0
 
@@ -56,18 +83,23 @@ export function CategoryChart({ data }: CategoryChartProps) {
           </div>
 
           <div className="space-y-2 sm:space-y-3 flex-1 sm:ml-6 w-full">
-            {data.map((item, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div
-                    className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  ></div>
-                  <span className="text-sm sm:text-base text-slate-700 dark:text-slate-300">{item.label}</span>
+            {data.map((item, index) => {
+              const percentage = total > 0 ? Math.round((item.value / total) * 100) : 0
+              return (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    ></div>
+                    <span className="text-sm sm:text-base text-slate-700 dark:text-slate-300">{item.label}</span>
+                  </div>
+                  <span className="text-sm sm:text-base text-slate-900 dark:text-white font-medium">
+                    {percentage}%
+                  </span>
                 </div>
-                <span className="text-sm sm:text-base text-slate-900 dark:text-white font-medium">{item.value}%</span>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </CardContent>

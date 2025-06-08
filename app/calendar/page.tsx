@@ -5,7 +5,6 @@ import { Plus, Filter, SortDesc, CalendarIcon, List } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MeetingCard } from "@/components/meeting-card"
 import { TaskCard } from "@/components/task-card"
-import { InsightsSection } from "@/components/insights-section"
 import { todaysMeetings, upcomingMeetings, tasks, calendarInsights } from "@/data/calendar-data"
 
 export default function CalendarPage() {
@@ -132,7 +131,7 @@ export default function CalendarPage() {
               </div>
             </div>
 
-            {/* Tasks List */}
+            Tasks List
             <div className="space-y-4">
               {filteredTasks.map((task, index) => (
                 <TaskCard key={task.id} task={task} index={index} />
@@ -141,8 +140,6 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {/* Insights Section */}
-        <InsightsSection insights={calendarInsights} />
       </div>
     </div>
   )

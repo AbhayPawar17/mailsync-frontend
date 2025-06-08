@@ -1,7 +1,7 @@
 "use client"
 
-import { Mail, Reply, Check, Calendar, TrendingUp, TrendingDown } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Mail, Reply, Check, Calendar, TrendingUp, TrendingDown } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { MetricCardData } from "@/types/insights"
 
 interface MetricCardProps {
@@ -13,22 +13,50 @@ export function MetricCard({ metric, index }: MetricCardProps) {
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case "mail":
-        return <Mail className="w-6 h-6" />
+        return <Mail className="w-5 h-5" />
       case "reply":
-        return <Reply className="w-6 h-6" />
+        return <Reply className="w-5 h-5" />
       case "check":
-        return <Check className="w-6 h-6" />
+        return <Check className="w-5 h-5" />
       case "calendar":
-        return <Calendar className="w-6 h-6" />
+        return <Calendar className="w-5 h-5" />
       default:
-        return <Mail className="w-6 h-6" />
+        return <Mail className="w-5 h-5" />
     }
   }
 
-  const getChangeColor = (change: number) => {
-    if (change > 0) return "text-green-500"
-    if (change < 0) return "text-red-500"
-    return "text-slate-500"
+  const getGradientAndColors = (iconName: string, index: number) => {
+    const gradients = [
+      {
+        bg: "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200",
+        icon: "text-blue-600",
+        title: "text-blue-700",
+        value: "text-blue-900",
+        change: "text-blue-600"
+      },
+      {
+        bg: "bg-gradient-to-br from-green-50 to-green-100 border-green-200",
+        icon: "text-green-600",
+        title: "text-green-700",
+        value: "text-green-900",
+        change: "text-green-600"
+      },
+      {
+        bg: "bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200",
+        icon: "text-purple-600",
+        title: "text-purple-700",
+        value: "text-purple-900",
+        change: "text-purple-600"
+      },
+      {
+        bg: "bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200",
+        icon: "text-orange-600",
+        title: "text-orange-700",
+        value: "text-orange-900",
+        change: "text-orange-600"
+      }
+    ]
+    return gradients[index % gradients.length]
   }
 
   const getChangeIcon = (change: number) => {
@@ -37,32 +65,37 @@ export function MetricCard({ metric, index }: MetricCardProps) {
     return null
   }
 
+  const colors = getGradientAndColors(metric.icon, index)
+
   return (
-    <Card
-      className="hover:shadow-lg transition-all duration-300 hover:scale-105 transform bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700"
+    <Card 
+      className={`${colors.bg} shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform border-0`}
       style={{
         animationDelay: `${index * 100}ms`,
       }}
     >
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-slate-600 dark:text-slate-400">{getIcon(metric.icon)}</div>
-          <div className={`flex items-center space-x-1 ${getChangeColor(metric.change)}`}>
-            {getChangeIcon(metric.change)}
-            <span className="text-sm font-medium">
-              {metric.change > 0 ? "+" : ""}
-              {metric.change}
-              {metric.unit === "%" ? "%" : ""}
-            </span>
-          </div>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className={`text-sm font-medium ${colors.title}`}>
+          {metric.title}
+        </CardTitle>
+        <div className={colors.icon}>
+          {getIcon(metric.icon)}
         </div>
-
-        <div className="space-y-1">
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">{metric.title}</p>
-          <div className="flex items-baseline space-x-1">
-            <span className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">{metric.value}</span>
-            <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">{metric.unit}</span>
-          </div>
+      </CardHeader>
+      <CardContent>
+        <div className={`text-3xl font-bold ${colors.value}`}>
+          {metric.value}
+          <span className={`text-lg font-normal ${colors.change} ml-1`}>
+            {metric.unit}
+          </span>
+        </div>
+        <div className="flex items-center mt-2">
+          <span className={`text-sm font-medium flex items-center gap-1 ${colors.change}`}>
+            {getChangeIcon(metric.change)}
+            {metric.change > 0 ? "+" : ""}
+            {metric.change}
+            {metric.unit === "%" ? "%" : ""}
+          </span>
         </div>
       </CardContent>
     </Card>

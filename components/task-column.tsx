@@ -85,7 +85,7 @@ export function TaskColumn({ column, onTaskClick }: TaskColumnProps) {
       </div>
 
       {/* Tasks Container */}
-      <div className="p-4 space-y-3 min-h-[500px] max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar">
+      <div className="p-4 space-y-3 min-h-[550px] max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
         {column.tasks.map((task) => (
           <TaskCard key={task.id} task={task} onClick={() => onTaskClick(task.id)} />
         ))}

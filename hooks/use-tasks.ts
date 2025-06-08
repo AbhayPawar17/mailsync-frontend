@@ -6,7 +6,7 @@ import type { ApiResponse, ApiTask, Task, TaskColumn } from "@/types/task"
 const API_URL = "https://mailsync.l4it.net/api/allmessages"
 const UPDATE_API_URL = "https://mailsync.l4it.net/api/update_mail"
 const SEARCH_API_URL = "https://mailsync.l4it.net/api/search"
-const API_TOKEN = "69|CMhCMlrzQ95hvSG09M7n7Pr30imrP3ZtscU85NYZ30534b3d"
+const API_TOKEN = "77|cFfD1PvQAfc6ICP1GHgrRR9f9lKtg0iFA8JKn7dUf2de2242"
 
 // Transform API task to internal task format
 const transformApiTask = (apiTask: ApiTask): Task => {

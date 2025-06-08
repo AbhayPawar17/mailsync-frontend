@@ -46,29 +46,29 @@ export const metricsData: MetricCardData[] = [
   },
 ]
 
-export const weeklyActivityData: WeeklyActivityData[] = [
-  { day: "Mon", emails: 25, meetings: 3, tasks: 8 },
-  { day: "Tue", emails: 18, meetings: 5, tasks: 6 },
-  { day: "Wed", emails: 32, meetings: 2, tasks: 12 },
-  { day: "Thu", emails: 22, meetings: 4, tasks: 7 },
-  { day: "Fri", emails: 28, meetings: 3, tasks: 9 },
-  { day: "Sat", emails: 8, meetings: 1, tasks: 3 },
-  { day: "Sun", emails: 5, meetings: 0, tasks: 2 },
-]
+// export const weeklyActivityData: WeeklyActivityData[] = [
+//   { day: "Mon", emails: 25, meetings: 3, tasks: 8 },
+//   { day: "Tue", emails: 18, meetings: 5, tasks: 6 },
+//   { day: "Wed", emails: 32, meetings: 2, tasks: 12 },
+//   { day: "Thu", emails: 22, meetings: 4, tasks: 7 },
+//   { day: "Fri", emails: 28, meetings: 3, tasks: 9 },
+//   { day: "Sat", emails: 8, meetings: 1, tasks: 3 },
+//   { day: "Sun", emails: 5, meetings: 0, tasks: 2 },
+// ]
 
-export const sentimentData: SentimentData[] = [
-  { label: "Positive", value: 45, color: "#10B981" },
-  { label: "Neutral", value: 35, color: "#6B7280" },
-  { label: "Negative", value: 20, color: "#EF4444" },
-]
+// export const sentimentData: SentimentData[] = [
+//   { label: "Positive", value: 45, color: "#10B981" },
+//   { label: "Neutral", value: 35, color: "#6B7280" },
+//   { label: "Negative", value: 20, color: "#EF4444" },
+// ]
 
-export const categoryData: CategoryData[] = [
-  { label: "Work", value: 55, color: "#3B82F6" },
-  { label: "Personal", value: 20, color: "#8B5CF6" },
-  { label: "Marketing", value: 15, color: "#F59E0B" },
-  { label: "Social", value: 7, color: "#EC4899" },
-  { label: "Urgent", value: 3, color: "#EF4444" },
-]
+// export const categoryData: CategoryData[] = [
+//   { label: "Work", value: 55, color: "#3B82F6" },
+//   { label: "Personal", value: 20, color: "#8B5CF6" },
+//   { label: "Marketing", value: 15, color: "#F59E0B" },
+//   { label: "Social", value: 7, color: "#EC4899" },
+//   { label: "Urgent", value: 3, color: "#EF4444" },
+// ]
 
 export const focusTimeData: FocusTimeData[] = [
   { day: "Mon", hours: 3.5 },

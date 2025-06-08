@@ -2,7 +2,6 @@
 
 import { useEffect } from "react"
 import { Sidebar } from "@/components/sidebar"
-import { Header } from "@/components/header"
 import { ScrollToTop } from "@/components/scroll-to-top"
 import { useEmailStore } from "@/hooks/use-email-store"
 import CalendarPage from "../calendar/page"
@@ -16,9 +15,6 @@ import { FocusTimeChart } from "@/components/focus-time-chart"
 import { AISuggestions } from "@/components/ai-suggestions"
 import {
   metricsData,
-  weeklyActivityData,
-  sentimentData,
-  categoryData,
   focusTimeData,
   aiSuggestions,
 } from "@/data/insights-data"
@@ -78,13 +74,13 @@ export default function TaskManagementApp() {
               {/* Charts Row */}
               <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-1">
-                  <WeeklyActivityChart data={weeklyActivityData} />
+                  <WeeklyActivityChart />
                 </div>
                 <div className="lg:col-span-1">
-                  <SentimentChart data={sentimentData} />
+                  <SentimentChart  />
                 </div>
                 <div className="lg:col-span-1">
-                  <CategoryChart data={categoryData} />
+                  <CategoryChart/>
                 </div>
               </div>
 
