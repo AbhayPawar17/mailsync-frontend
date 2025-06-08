@@ -33,7 +33,7 @@ interface TaskDetailModalProps {
 }
 
 const SMART_REPLY_API_URL = "https://mailsync.l4it.net/api/smart_reply"
-const API_TOKEN = "77|cFfD1PvQAfc6ICP1GHgrRR9f9lKtg0iFA8JKn7dUf2de2242"
+const API_TOKEN = "82|PZj2jHaTJCPbY5bI25LRmfsYFcQwZQar8Y6sCQEh408b4424"
 
 export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps) {
   const [emailResponse, setEmailResponse] = useState("")

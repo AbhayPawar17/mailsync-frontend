@@ -25,7 +25,7 @@ export interface SearchResponse {
 }
 
 const API_BASE_URL = 'https://mailsync.l4it.net/api';
-const AUTH_TOKEN = 'Bearer 76|GNpdHjcG6HzyeI443ecpttnj07fizw6V95zjFEgPb8d9d714';
+const AUTH_TOKEN = 'Bearer 83|4Q9k3kuVUHaXPm5tM8dMZ3NM5Y0Fl5ExKpMiKbXD46b684ec';
 
 export const searchMails = async (query: string): Promise<SearchResponse> => {
   try {
