@@ -25,15 +25,7 @@ interface HeaderProps {
 export function Header({
   searchQuery,
   setSearchQuery,
-  isDarkMode,
-  setIsDarkMode,
-  handleLayoutChange,
-  viewDensity,
-  setViewDensity,
-  animationSpeed,
-  setAnimationSpeed,
-  onRefresh,
-  isRefreshing,
+
   onSearchResults = () => {},
 }: HeaderProps) {
   const [isSearching, setIsSearching] = useState(false)

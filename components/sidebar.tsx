@@ -111,8 +111,8 @@ export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, se
               <Button
                 key={item.label}
                 variant={item.active ? "default" : "ghost"}
-                onClick={() => setCurrentPage(item.label.toLowerCase() as "calendar" | "email" | "insights")}
-                className={`w-full ${sidebarCollapsed ? "justify-center" : "justify-start"} ${
+                onClick={() => setCurrentPage(item.label.toLowerCase() as "dashboard" | "calendar" | "email" | "insights")}
+                className={`w-full cursor-pointer ${sidebarCollapsed ? "justify-center" : "justify-start"} ${
                   item.active
                     ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
                     : "text-slate-300 hover:text-white hover:bg-slate-700 dark:hover:bg-gray-800"
@@ -149,7 +149,7 @@ export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, se
               <Button
                 key={item.label}
                 variant="ghost"
-                className={`w-full ${
+                className={`w-full cursor-pointer ${
                   sidebarCollapsed ? "justify-center" : "justify-between"
                 } text-slate-300 hover:text-white hover:bg-slate-700 dark:hover:bg-gray-800 transition-all duration-300 hover:scale-105 transform`}
                 style={{

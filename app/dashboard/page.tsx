@@ -6,7 +6,6 @@ import { ScrollToTop } from "@/components/scroll-to-top"
 import { useEmailStore } from "@/hooks/use-email-store"
 import CalendarPage from "../calendar/page"
 import { KanbanBoard } from "@/components/kanban-board"
-
 import { MetricCard } from "@/components/metric-card"
 import { WeeklyActivityChart } from "@/components/weekly-activity-chart"
 import { SentimentChart } from "@/components/sentiment-chart"
@@ -18,26 +17,17 @@ import {
   focusTimeData,
   aiSuggestions,
 } from "@/data/insights-data"
-import { usePathname } from "next/navigation"
 import Dashboard from "@/components/dashboard/page"
 
 export default function TaskManagementApp() {
   const {
     isDarkMode,
     showScrollTop,
-    animationSpeed,
     currentPage,
-    setIsDarkMode,
     setSidebarCollapsed,
     setShowScrollTop,
-    setAnimationSpeed,
     setCurrentPage,
-    handleLayoutChange,
     sidebarCollapsed,
-    viewDensity,
-    setViewDensity,
-    searchQuery,
-    setSearchQuery,
   } = useEmailStore()
 
   useEffect(() => {
@@ -67,14 +57,12 @@ export default function TaskManagementApp() {
                 </p>
               </div>
 
-              {/* Metrics Cards */}
               <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
                 {metricsData.map((metric, index) => (
                   <MetricCard key={metric.id} metric={metric} index={index} />
                 ))}
               </div>
 
-              {/* Charts Row */}
               <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-1">
                   <WeeklyActivityChart />
@@ -87,7 +75,6 @@ export default function TaskManagementApp() {
                 </div>
               </div>
 
-              {/* Bottom Row */}
               <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
                 <FocusTimeChart data={focusTimeData} />
                 <AISuggestions suggestions={aiSuggestions} />
@@ -101,7 +88,6 @@ export default function TaskManagementApp() {
   }
 
   return (
-
     <div
       className={`min-h-screen transition-all duration-700 ease-in-out ${isDarkMode ? "dark bg-gradient-to-br from-gray-900 to-slate-900" : "bg-gray-50"}`}
     >
@@ -114,25 +100,6 @@ export default function TaskManagementApp() {
         />
 
         <div className={`flex-1 flex flex-col min-w-0 ${sidebarCollapsed ? "ml-0" : ""}`}>
-          {/* <Header
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            isDarkMode={isDarkMode}
-            setIsDarkMode={setIsDarkMode}
-            handleLayoutChange={handleLayoutChange}
-            viewDensity={viewDensity}
-            setViewDensity={setViewDensity}
-            animationSpeed={animationSpeed}
-            setAnimationSpeed={setAnimationSpeed}
-            onRefresh={
-              currentPage === "tasks"
-                ? () => {
-                    // This will be handled by the KanbanBoard component itself
-                  }
-                : undefined
-            }
-          /> */}
-
           {renderCurrentPage()}
         </div>
       </div>
@@ -160,5 +127,5 @@ export default function TaskManagementApp() {
         }
       `}</style>
     </div>
-    )}
-
+  )
+}

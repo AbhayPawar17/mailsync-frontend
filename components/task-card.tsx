@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar, User, Mail, Tag } from "lucide-react"
+import { Calendar, User, Mail } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { Task } from "@/types/task"

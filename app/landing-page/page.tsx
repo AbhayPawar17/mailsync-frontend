@@ -1,4 +1,5 @@
 "use client"
+/* eslint-disable react/no-unescaped-entities */
 
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
@@ -19,7 +20,6 @@ import {
   MessageSquare,
   Calendar,
   ChevronRight,
-  ArrowUpRight,
   Plus,
   Minus,
 } from "lucide-react"
@@ -40,6 +40,50 @@ export default function AIEmailLandingPage() {
   const testimonialsRef = useRef(null)
   const faqRef = useRef(null)
   const ctaRef = useRef(null)
+  
+  // Testimonials data
+  const testimonials = [
+    {
+      name: "Sarah Johnson",
+      role: "Marketing Director",
+      company: "TechCorp",
+      image: "/placeholder.svg?height=80&width=80",
+      quote: "EmailSync AI has transformed how I manage my inbox. I save at least 2 hours every day with their smart categorization and AI replies.",
+      rating: 5
+    },
+    {
+      name: "Michael Chen",
+      role: "Startup Founder",
+      company: "InnovateLabs",
+      image: "/placeholder.svg?height=80&width=80",
+      quote: "As a founder, I receive hundreds of emails daily. This AI tool has been a game-changer for my productivity and response time.",
+      rating: 5
+    },
+    {
+      name: "Priya Patel",
+      role: "Sales Executive",
+      company: "GlobalSales Inc.",
+      image: "/placeholder.svg?height=80&width=80",
+      quote: "The priority inbox feature ensures I never miss important client emails. The AI suggestions for replies are surprisingly personal and accurate.",
+      rating: 5
+    },
+    {
+      name: "David Rodriguez",
+      role: "Operations Manager",
+      company: "LogiFlow",
+      image: "/placeholder.svg?height=80&width=80",
+      quote: "The automation features have reduced my email processing time by 70%. I can finally focus on strategic work instead of inbox management.",
+      rating: 5
+    },
+    {
+      name: "Emily Watson",
+      role: "Product Manager",
+      company: "DesignHub",
+      image: "/placeholder.svg?height=80&width=80",
+      quote: "The AI's ability to understand context and suggest relevant replies is incredible. It feels like having a personal assistant for email.",
+      rating: 5
+    }
+  ]
 
   useEffect(() => {
     setIsVisible(true)
@@ -89,20 +133,7 @@ export default function AIEmailLandingPage() {
       clearInterval(testimonialInterval)
       observer.disconnect()
     }
-  }, [testimonialDirection])
-
-  const emailProviders = [
-    { name: "Gmail", icon: "https://www.pngall.com/wp-content/uploads/12/Gmail-Logo-PNG-Images.png", color: "bg-red-500", position: "top-4 left-1/2 transform -translate-x-1/2" },
-    { name: "Yahoo", icon: "Y", color: "bg-purple-600", position: "top-1/2 -right-20 transform -translate-y-1/2" },
-    {
-      name: "Office 365",
-      icon: "365",
-      color: "bg-orange-500",
-      position: "bottom-4 left-1/2 transform -translate-x-1/2",
-      iconSize: "text-xs",
-    },
-    { name: "Outlook", icon: "O", color: "bg-blue-600", position: "top-1/2 -left-20 transform -translate-y-1/2" },
-  ]
+  }, [testimonialDirection , testimonials.length])
 
   const aiFeatures = [
     {
@@ -188,49 +219,6 @@ export default function AIEmailLandingPage() {
       title: "Experience Email Automation",
       description: "Let the AI handle email sorting, prioritization, and suggested replies while you focus on what matters.",
       step: "03"
-    }
-  ]
-
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      role: "Marketing Director",
-      company: "TechCorp",
-      image: "/placeholder.svg?height=80&width=80",
-      quote: "EmailSync AI has transformed how I manage my inbox. I save at least 2 hours every day with their smart categorization and AI replies.",
-      rating: 5
-    },
-    {
-      name: "Michael Chen",
-      role: "Startup Founder",
-      company: "InnovateLabs",
-      image: "/placeholder.svg?height=80&width=80",
-      quote: "As a founder, I receive hundreds of emails daily. This AI tool has been a game-changer for my productivity and response time.",
-      rating: 5
-    },
-    {
-      name: "Priya Patel",
-      role: "Sales Executive",
-      company: "GlobalSales Inc.",
-      image: "/placeholder.svg?height=80&width=80",
-      quote: "The priority inbox feature ensures I never miss important client emails. The AI suggestions for replies are surprisingly personal and accurate.",
-      rating: 5
-    },
-    {
-      name: "David Rodriguez",
-      role: "Operations Manager",
-      company: "LogiFlow",
-      image: "/placeholder.svg?height=80&width=80",
-      quote: "The automation features have reduced my email processing time by 70%. I can finally focus on strategic work instead of inbox management.",
-      rating: 5
-    },
-    {
-      name: "Emily Watson",
-      role: "Product Manager",
-      company: "DesignHub",
-      image: "/placeholder.svg?height=80&width=80",
-      quote: "The AI's ability to understand context and suggest relevant replies is incredible. It feels like having a personal assistant for email.",
-      rating: 5
     }
   ]
 
@@ -620,11 +608,17 @@ const companyLogos = [
                 </div>
 
               {/* Floating Email Provider Icons */}
-              <div className="fixed inset-0 pointer-events-none z-20 overflow-visible">
+             <div className="fixed inset-0 pointer-events-none z-20 overflow-visible">
                 {/* Gmail - Top */}
                 <div className="absolute -top-[10vh] right-[0vw] animate-float delay-100">
                   <div className="w-16 h-16 rounded-xl flex items-center justify-center shadow-2xl hover:scale-125 transition-all cursor-pointer">
-                    <img src="https://www.pngall.com/wp-content/uploads/12/Gmail-Logo-PNG-Images.png" alt="Gmail Logo" className="w-8 h-8" />
+                    <Image 
+                      src="https://www.pngall.com/wp-content/uploads/12/Gmail-Logo-PNG-Images.png" 
+                      alt="Gmail Logo" 
+                      width={32}
+                      height={32}
+                      className="w-8 h-8"
+                    />
                     <div className="absolute inset-0 bg-red-400 rounded-xl animate-ping opacity-20" />
                   </div>
                 </div>
@@ -632,7 +626,13 @@ const companyLogos = [
                 {/* Yahoo - Right */}
                 <div className="absolute top-[60vh] -right-[5vw] animate-float delay-300">
                   <div className="w-12 h-12 bg rounded-xl flex items-center justify-center shadow-1xl hover:scale-125 transition-all cursor-pointer">
-                    <img src="https://i0.wp.com/lopezdoriga.com/wp-content/uploads/2015/09/Yahoo-Mail-tendr%C3%A1-nuevas-funciones-de-b%C3%BAsqueda-3.png?fit=1024%2C1024&ssl=1" alt="Yahoo Mail Logo" className="w-12 h-12" />
+                    <Image 
+                      src="https://i0.wp.com/lopezdoriga.com/wp-content/uploads/2015/09/Yahoo-Mail-tendr%C3%A1-nuevas-funciones-de-b%C3%BAsqueda-3.png?fit=1024%2C1024&ssl=1" 
+                      alt="Yahoo Mail Logo" 
+                      width={48}
+                      height={48}
+                      className="w-12 h-12"
+                    />
                     <div className="absolute inset-0 bg-purple-400 rounded-xl animate-ping opacity-20" />
                   </div>
                 </div>
@@ -640,7 +640,13 @@ const companyLogos = [
                 {/* Office 365 - Bottom */}
                 <div className="absolute bottom-[10vh] left-[50vw] animate-float delay-700">
                   <div className="w-16 h-16 rounded-xl flex items-center justify-center shadow-2xl hover:scale-125 transition-all cursor-pointer">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Microsoft_Office_logo_%282019%E2%80%93present%29.svg/1200px-Microsoft_Office_logo_%282019%E2%80%93present%29.svg.png" alt="Office 365 Logo" className="w-10 h-10" />
+                    <Image 
+                      src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Microsoft_Office_logo_%282019%E2%80%93present%29.svg/1200px-Microsoft_Office_logo_%282019%E2%80%93present%29.svg.png" 
+                      alt="Office 365 Logo" 
+                      width={40}
+                      height={40}
+                      className="w-10 h-10"
+                    />
                     <div className="absolute inset-0 bg-orange-400 rounded-xl animate-ping opacity-20" />
                   </div>
                 </div>
@@ -648,7 +654,13 @@ const companyLogos = [
                 {/* Outlook - Left */}
                 <div className="absolute bottom-[20vh] -left-[5vw] animate-float delay-500">
                   <div className="w-16 h-16 rounded-xl flex items-center justify-center shadow-2xl hover:scale-125 transition-all cursor-pointer">
-                    <img src="https://workolyk.com/wp-content/uploads/2021/09/Outlook-icone.png" alt="Outlook Logo" className="w-16 h-12" />
+                    <Image 
+                      src="https://workolyk.com/wp-content/uploads/2021/09/Outlook-icone.png" 
+                      alt="Outlook Logo" 
+                      width={64}
+                      height={48}
+                      className="w-16 h-12"
+                    />
                     <div className="absolute inset-0 bg-blue-400 rounded-xl animate-ping opacity-20" />
                   </div>
                 </div>
@@ -823,15 +835,17 @@ const companyLogos = [
                 className="flex transition-transform duration-700 ease-in-out"
                 style={{ transform: `translateX(-${activeTestimonial * 100}%)` }}
               >
-                {testimonials.map((testimonial, index) => (
+                {testimonials.map((testimonial) => (
                   <div key={testimonial.name} className="w-full flex-shrink-0">
                     <div className="bg-white rounded-3xl p-8 md:p-12 shadow-lg border border-blue-100 mx-2">
                       <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
                         <div className="w-24 h-24 rounded-full overflow-hidden flex-shrink-0 ring-4 ring-blue-100">
-                          <img 
-                            src={testimonial.image || "/placeholder.svg"} 
-                            alt={testimonial.name} 
-                            className="w-full h-full object-cover" 
+                          <Image
+                            src={testimonial.image || "/placeholder.svg"}
+                            alt={testimonial.name}
+                            className="w-full h-full object-cover"
+                            width={500}  // Set appropriate width
+                            height={500} // Set appropriate height
                           />
                         </div>
                         <div className="flex-1 text-center md:text-left">

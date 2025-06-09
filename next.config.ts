@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
       'ui-avatars.com',
       'lh3.googleusercontent.com', 
       'avatars.githubusercontent.com', 
-      'workolyk.com',
+      'workolyk.com','upload.wikimedia.org',
       'www.pngall.com', 'i0.wp.com' , 'online.iotap.in', 'i.pinimg.com'
     ],
   },

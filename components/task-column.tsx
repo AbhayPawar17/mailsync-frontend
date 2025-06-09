@@ -1,9 +1,6 @@
 "use client"
 
-import { Plus, MoreHorizontal, Filter, SortAsc } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { TaskCard } from "./task-card"
 import type { TaskColumn as TaskColumnType } from "@/types/task"
 

@@ -2,9 +2,6 @@
 
 import {
   X,
-  Calendar,
-  Clock,
-  AlertTriangle,
   CheckCircle,
   Star,
   Edit,
@@ -17,10 +14,7 @@ import {
   Combine,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Textarea } from "@/components/ui/textarea"
 import { useState, useEffect } from "react"
 import type { Task } from "@/types/task"
@@ -34,7 +28,7 @@ interface TaskDetailModalProps {
 }
 
 const SMART_REPLY_API_URL = "https://mailsync.l4it.net/api/smart_reply"
-const API_TOKEN = "85|FIJoppe3rkA0DBSYtXJmrd7HYBHvDwQXNmBwLecabf31e216"
+const API_TOKEN = "87|avvtG1xNsUCO0KZAmF26AWorCDhAVrVJLA4wvkoB2234f353"
 
 export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps) {
   const [emailResponse, setEmailResponse] = useState("")
@@ -69,7 +63,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
     setDraftResponse("")
   }, [task?.graphId])
 
-    const handleSmartAIReply = async () => {
+  const handleSmartAIReply = async () => {
     if (!task?.graphId) {
       setSmartReplyError("No graph ID available for this task")
       return
@@ -112,13 +106,6 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
     } finally {
       setIsGeneratingReply(false)
     }
-  }
-
-  const stripHtml = (html: string) => {
-    if (!html) return ''
-    const tmp = document.createElement('div')
-    tmp.innerHTML = html
-    return tmp.textContent || tmp.innerText || ''
   }
 
   const htmlToEditableText = (html: string) => {
@@ -209,43 +196,11 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
     onClose()
   }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "Critical":
-        return "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/25"
-      case "High":
-        return "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25"
-      case "Medium":
-        return "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25"
-      case "Low":
-        return "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25"
-      default:
-        return "bg-gradient-to-r from-slate-500 to-slate-600 text-white shadow-lg shadow-slate-500/25"
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "To Do":
-        return "bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 dark:from-blue-900/30 dark:to-blue-800/30 dark:text-blue-400 border border-blue-300 dark:border-blue-700"
-      case "In Progress":
-        return "bg-gradient-to-r from-amber-100 to-amber-200 text-amber-800 dark:from-amber-900/30 dark:to-amber-800/30 dark:text-amber-400 border border-amber-300 dark:border-amber-700"
-      case "Blocked":
-        return "bg-gradient-to-r from-red-100 to-red-200 text-red-800 dark:from-red-900/30 dark:to-red-800/30 dark:text-red-400 border border-red-300 dark:border-red-700"
-      case "Completed":
-        return "bg-gradient-to-r from-emerald-100 to-emerald-200 text-emerald-800 dark:from-emerald-900/30 dark:to-emerald-800/30 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700"
-      default:
-        return "bg-gradient-to-r from-slate-100 to-slate-200 text-slate-800 dark:from-slate-900/30 dark:to-slate-800/30 dark:text-slate-400 border border-slate-300 dark:border-slate-700"
-    }
-  }
-
   const renderHtml = (html: string) => {
     if (!html) return null
     const cleanHtml = DOMPurify.sanitize(html)
     return <div dangerouslySetInnerHTML={{ __html: cleanHtml }} />
   }
-
-  const progressPercentage = task?.progress ? (task.progress.completed / task.progress.total) * 100 : 0
 
   if (!isOpen || !task) return null
 

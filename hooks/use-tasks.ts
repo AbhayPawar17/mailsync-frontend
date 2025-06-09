@@ -7,7 +7,7 @@ import type { ApiResponse, ApiTask, Task, TaskColumn } from "@/types/task"
 const API_URL = "https://mailsync.l4it.net/api/allmessages"
 const UPDATE_API_URL = "https://mailsync.l4it.net/api/update_mail"
 const SEARCH_API_URL = "https://mailsync.l4it.net/api/search"
-const API_TOKEN = "85|FIJoppe3rkA0DBSYtXJmrd7HYBHvDwQXNmBwLecabf31e216"
+const API_TOKEN = "87|avvtG1xNsUCO0KZAmF26AWorCDhAVrVJLA4wvkoB2234f353"
 
 // Global state to persist tasks across component re-renders
 let globalTasks: Task[] = []
@@ -95,7 +95,7 @@ export const useTasks = () => {
       globalLoading = false
     }
   }
-  
+
  const updateAndFetchTasks = async () => {
     try {
       setLoading(true)

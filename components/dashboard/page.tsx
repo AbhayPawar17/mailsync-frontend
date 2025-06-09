@@ -1,11 +1,10 @@
 "use client"
+/* eslint-disable react/no-unescaped-entities */
 
 import {
   Calendar,
   Mail,
   Sparkles,
-  CheckCircle2,
-  TrendingUp,
   FileText,
   User,
   Clock,
@@ -22,13 +21,6 @@ import { useState } from "react"
 
 export default function Dashboard() {
   const [selectedMeeting, setSelectedMeeting] = useState<any>(null)
-
-  const currentDate = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
 
   const todaysMeetings = [
     {
