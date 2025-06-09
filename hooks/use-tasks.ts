@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import axios from "axios"
+import Cookies from "js-cookie"
 import type { ApiResponse, ApiTask, Task, TaskColumn } from "@/types/task"
 
 const API_URL = "https://mailsync.l4it.net/api/allmessages"
@@ -14,6 +15,10 @@ let globalTasks: Task[] = []
 let globalLoading = false
 let globalError: string | null = null
 let isInitialized = false
+
+  const getToken = () => {
+    return Cookies.get('authToken') || '' // Returns empty string if cookie not found
+  }
 
 // Transform API task to internal task format
 const transformApiTask = (apiTask: ApiTask): Task => {
@@ -50,7 +55,14 @@ export const useTasks = () => {
     globalError = newError
   }
 
-  const fetchTasks = async () => {
+   const fetchTasks = async () => {
+    const authToken = getToken()
+    if (!authToken) {
+      setError("Authentication token not found")
+      updateGlobalState([], false, "Authentication token not found")
+      return
+    }
+
     try {
       setLoading(true)
       globalLoading = true
@@ -59,7 +71,7 @@ export const useTasks = () => {
 
       const response = await axios.post<ApiResponse>(API_URL, {}, {
         headers: {
-          Authorization: `Bearer ${API_TOKEN}`,
+          Authorization: `Bearer ${authToken}`,
           "Content-Type": "application/json",
         },
       })
@@ -96,7 +108,13 @@ export const useTasks = () => {
     }
   }
 
- const updateAndFetchTasks = async () => {
+  const updateAndFetchTasks = async () => {
+    const authToken = getToken()
+    if (!authToken) {
+      setError("Authentication token not found")
+      return
+    }
+
     try {
       setLoading(true)
       globalLoading = true
@@ -106,7 +124,7 @@ export const useTasks = () => {
       // First call the update API
       const updateResponse = await axios.post<ApiResponse>(UPDATE_API_URL, {}, {
         headers: {
-          Authorization: `Bearer ${API_TOKEN}`,
+          Authorization: `Bearer ${authToken}`,
           "Content-Type": "application/json",
         },
       })
@@ -132,9 +150,14 @@ export const useTasks = () => {
     }
   }
 
-  const searchTasks = async (query: string) => {
+   const searchTasks = async (query: string) => {
+    const authToken = getToken()
+    if (!authToken) {
+      setError("Authentication token not found")
+      return
+    }
+
     if (!query.trim()) {
-      // If search query is empty, fetch all tasks
       await fetchTasks()
       return
     }
@@ -148,18 +171,16 @@ export const useTasks = () => {
 
       const response = await axios.post(SEARCH_API_URL, formData, {
         headers: {
-          Authorization: `Bearer ${API_TOKEN}`,
+          Authorization: `Bearer ${authToken}`,
           "Content-Type": "application/x-www-form-urlencoded",
         },
       })
 
-      // Fix: Update the response structure parsing
       if (response.data.data && response.data.data.status && response.data.data.mail && Array.isArray(response.data.data.mail)) {
         const transformedTasks = response.data.data.mail.map(transformApiTask)
         setTasks(transformedTasks)
         updateGlobalState(transformedTasks, false, null)
       } else {
-        // Handle case where no results are found
         setTasks([])
         updateGlobalState([], false, null)
       }

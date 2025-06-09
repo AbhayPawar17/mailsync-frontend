@@ -20,6 +20,7 @@ import { useState, useEffect } from "react"
 import type { Task } from "@/types/task"
 import DOMPurify from 'dompurify'
 import axios from "axios"
+import Cookies from "js-cookie"
 
 interface TaskDetailModalProps {
   task: Task | null | undefined
@@ -63,7 +64,17 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
     setDraftResponse("")
   }, [task?.graphId])
 
-  const handleSmartAIReply = async () => {
+  const getAuthToken = () => {
+    return Cookies.get('authToken') || ''
+  }
+
+   const handleSmartAIReply = async () => {
+    const authToken = getAuthToken()
+    if (!authToken) {
+      setSmartReplyError("Authentication token not found")
+      return
+    }
+
     if (!task?.graphId) {
       setSmartReplyError("No graph ID available for this task")
       return
@@ -81,7 +92,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
       const response = await axios.post(SMART_REPLY_API_URL, formData, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: `Bearer ${API_TOKEN}`,
+          Authorization: `Bearer ${authToken}`,
         },
       })
 

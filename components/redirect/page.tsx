@@ -58,11 +58,10 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
 
       setTimeout(() => {
         console.log("redirecting...")
-        window.location.href = "http://localhost:3000"
+          router.push("/dashboard");
       }, 1500)
     }
 
-    // Progress counter with step updates
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
         const newProgress = prev + 1.5

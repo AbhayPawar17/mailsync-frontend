@@ -47,7 +47,7 @@ export default function AIEmailLandingPage() {
       name: "Sarah Johnson",
       role: "Marketing Director",
       company: "TechCorp",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "https://admissionsight.com/wp-content/uploads/2023/09/shutterstock_2212201005.jpg",
       quote: "EmailSync AI has transformed how I manage my inbox. I save at least 2 hours every day with their smart categorization and AI replies.",
       rating: 5
     },
@@ -55,7 +55,7 @@ export default function AIEmailLandingPage() {
       name: "Michael Chen",
       role: "Startup Founder",
       company: "InnovateLabs",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "https://img.freepik.com/premium-photo/woman-smiling-while-wearing-hat-standing-sunset_961147-10745.jpg",
       quote: "As a founder, I receive hundreds of emails daily. This AI tool has been a game-changer for my productivity and response time.",
       rating: 5
     },
@@ -63,7 +63,7 @@ export default function AIEmailLandingPage() {
       name: "Priya Patel",
       role: "Sales Executive",
       company: "GlobalSales Inc.",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "https://tse4.mm.bing.net/th/id/OIP.rQnbppbz72t-E08T3kPd0QHaGx?w=700&h=640&rs=1&pid=ImgDetMain",
       quote: "The priority inbox feature ensures I never miss important client emails. The AI suggestions for replies are surprisingly personal and accurate.",
       rating: 5
     },

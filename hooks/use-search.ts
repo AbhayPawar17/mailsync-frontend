@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 export interface MailItem {
   id: number;
@@ -25,9 +26,15 @@ export interface SearchResponse {
 }
 
 const API_BASE_URL = 'https://mailsync.l4it.net/api';
-const AUTH_TOKEN = 'Bearer 87|avvtG1xNsUCO0KZAmF26AWorCDhAVrVJLA4wvkoB2234f353';
 
 export const searchMails = async (query: string): Promise<SearchResponse> => {
+  // Get token from cookies - matches your auth implementation
+  const authToken = Cookies.get('authToken');
+  
+  if (!authToken) {
+    throw new Error('Authentication token not found in cookies');
+  }
+
   try {
     const response = await axios.post<SearchResponse>(
       `${API_BASE_URL}/search`,
@@ -35,7 +42,7 @@ export const searchMails = async (query: string): Promise<SearchResponse> => {
       {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': AUTH_TOKEN,
+          'Authorization': `Bearer ${authToken}`,
         }
       }
     );
