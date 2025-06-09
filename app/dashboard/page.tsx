@@ -19,6 +19,7 @@ import {
   aiSuggestions,
 } from "@/data/insights-data"
 import { usePathname } from "next/navigation"
+import Dashboard from "@/components/dashboard/page"
 
 export default function TaskManagementApp() {
   const {
@@ -49,6 +50,8 @@ export default function TaskManagementApp() {
 
   const renderCurrentPage = () => {
     switch (currentPage) {
+      case "dashboard":
+        return <Dashboard/>
       case "calendar":
         return <CalendarPage />
       case "insights":

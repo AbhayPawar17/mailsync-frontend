@@ -13,7 +13,7 @@ export const useEmailStore = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [animationSpeed, setAnimationSpeed] = useState([1])
-  const [currentPage, setCurrentPage] = useState<"email" | "calendar" | "insights">("email")
+  const [currentPage, setCurrentPage] = useState<"dashboard" | "email" | "calendar" | "insights">("dashboard")
 
   const handleLayoutChange = (newLayout: LayoutType) => {
     setLayout(newLayout)

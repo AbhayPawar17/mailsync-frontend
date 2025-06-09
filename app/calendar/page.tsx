@@ -5,7 +5,7 @@ import { Plus, Filter, SortDesc, CalendarIcon, List } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MeetingCard } from "@/components/meeting-card"
 import { TaskCard } from "@/components/task-card"
-import { todaysMeetings, upcomingMeetings, tasks, calendarInsights } from "@/data/calendar-data"
+import { todaysMeetings, upcomingMeetings, tasks } from "@/data/calendar-data"
 import type { Task as CalendarTask } from "@/types/calendar"
 import type { Task as TaskType } from "@/types/task"
 
@@ -71,11 +71,11 @@ export default function CalendarPage() {
               </div>
             </div>
 
-            {/* Today's Meetings */}
+            {/* Today&apos;s Meetings */}
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <CalendarIcon className="w-5 h-5 text-blue-600" />
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Today's Meetings</h2>
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Today&apos;s Meetings</h2>
               </div>
               <div className="grid gap-4">
                 {todaysMeetings.map((meeting, index) => (
@@ -116,7 +116,7 @@ export default function CalendarPage() {
             {/* Task Filters */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 overflow-x-auto">
-                {taskFilters.map((filter, index) => (
+                {taskFilters.map((filter) => (
                   <Button
                     key={filter}
                     variant={selectedTaskFilter === filter ? "default" : "outline"}
@@ -127,9 +127,6 @@ export default function CalendarPage() {
                         ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
                         : "text-slate-600 dark:text-slate-300 hover:shadow-md"
                     }`}
-                    style={{
-                      transitionDelay: `${index * 50}ms`,
-                    }}
                   >
                     {filter}
                   </Button>
@@ -150,7 +147,7 @@ export default function CalendarPage() {
 
             {/* Tasks List */}
             <div className="space-y-4">
-              {filteredTasks.map((task, index) => (
+              {filteredTasks.map((task) => (
                 <TaskCard 
                   key={task.id} 
                   task={convertToTaskType(task)} 
@@ -160,7 +157,6 @@ export default function CalendarPage() {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   )

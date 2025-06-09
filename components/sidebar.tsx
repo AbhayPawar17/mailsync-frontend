@@ -11,7 +11,7 @@ interface SidebarProps {
   sidebarCollapsed: boolean
   setSidebarCollapsed: (collapsed: boolean) => void
   currentPage: string
-  setCurrentPage: (page: "calendar" | "email" | "insights") => void
+  setCurrentPage: (page: "dashboard" | "calendar" | "email" | "insights") => void
 }
 
 export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, setCurrentPage }: SidebarProps) {
