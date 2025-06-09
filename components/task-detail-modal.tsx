@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useState, useEffect } from "react"
 import type { Task } from "@/types/task"
 import DOMPurify from 'dompurify'
+import axios from "axios"
 
 interface TaskDetailModalProps {
   task: Task | null | undefined
@@ -33,7 +34,7 @@ interface TaskDetailModalProps {
 }
 
 const SMART_REPLY_API_URL = "https://mailsync.l4it.net/api/smart_reply"
-const API_TOKEN = "82|PZj2jHaTJCPbY5bI25LRmfsYFcQwZQar8Y6sCQEh408b4424"
+const API_TOKEN = "85|FIJoppe3rkA0DBSYtXJmrd7HYBHvDwQXNmBwLecabf31e216"
 
 export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps) {
   const [emailResponse, setEmailResponse] = useState("")
@@ -68,7 +69,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
     setDraftResponse("")
   }, [task?.graphId])
 
-  const handleSmartAIReply = async () => {
+    const handleSmartAIReply = async () => {
     if (!task?.graphId) {
       setSmartReplyError("No graph ID available for this task")
       return
@@ -83,28 +84,17 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
       const formData = new URLSearchParams()
       formData.append("graph_id", task.graphId)
 
-      const response = await fetch(SMART_REPLY_API_URL, {
-        method: "POST",
+      const response = await axios.post(SMART_REPLY_API_URL, formData, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
           Authorization: `Bearer ${API_TOKEN}`,
         },
-        body: formData,
       })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null)
-        throw new Error(
-          errorData?.message || 
-          `Smart reply API error! Status: ${response.status} ${response.statusText}`
-        )
-      }
-
-      const data = await response.json()
-      console.log("Smart reply API response:", data)
+      console.log("Smart reply API response:", response.data)
 
       // Extract replies from the response
-      const replies = data?.data?.body?.replies || []
+      const replies = response.data?.data?.body?.replies || []
       
       if (!replies.length) {
         throw new Error("No reply options were generated")

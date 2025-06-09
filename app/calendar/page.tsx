@@ -6,12 +6,29 @@ import { Button } from "@/components/ui/button"
 import { MeetingCard } from "@/components/meeting-card"
 import { TaskCard } from "@/components/task-card"
 import { todaysMeetings, upcomingMeetings, tasks, calendarInsights } from "@/data/calendar-data"
+import type { Task as CalendarTask } from "@/types/calendar"
+import type { Task as TaskType } from "@/types/task"
 
 export default function CalendarPage() {
   const [selectedTaskFilter, setSelectedTaskFilter] = useState("All")
   const [calendarView, setCalendarView] = useState<"List" | "Calendar">("List")
 
   const taskFilters = ["All", "To Do", "In Progress", "Done", "AI AI-Extracted"]
+  
+  // Convert CalendarTask to TaskType for compatibility with TaskCard
+  const convertToTaskType = (calendarTask: CalendarTask): TaskType => {
+    return {
+      id: calendarTask.id.toString(), // Convert number to string
+      title: calendarTask.title,
+      description: calendarTask.description,
+      priority: calendarTask.priority === "High" || calendarTask.priority === "Medium" || calendarTask.priority === "Low" 
+        ? calendarTask.priority : "Medium",
+      status: calendarTask.status === "To Do" || calendarTask.status === "In Progress" 
+        ? calendarTask.status : "To Do",
+      dueDate: calendarTask.dueDate,
+      assignedTo: calendarTask.assignee,
+    }
+  }
 
   const filteredTasks = tasks.filter((task) => {
     if (selectedTaskFilter === "All") return true
@@ -131,10 +148,14 @@ export default function CalendarPage() {
               </div>
             </div>
 
-            Tasks List
+            {/* Tasks List */}
             <div className="space-y-4">
               {filteredTasks.map((task, index) => (
-                <TaskCard key={task.id} task={task} index={index} />
+                <TaskCard 
+                  key={task.id} 
+                  task={convertToTaskType(task)} 
+                  onClick={() => {}} 
+                />
               ))}
             </div>
           </div>

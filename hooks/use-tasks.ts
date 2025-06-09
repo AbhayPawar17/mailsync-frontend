@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import axios from "axios"
 import type { ApiResponse, ApiTask, Task, TaskColumn } from "@/types/task"
 
 const API_URL = "https://mailsync.l4it.net/api/allmessages"
 const UPDATE_API_URL = "https://mailsync.l4it.net/api/update_mail"
 const SEARCH_API_URL = "https://mailsync.l4it.net/api/search"
-const API_TOKEN = "83|4Q9k3kuVUHaXPm5tM8dMZ3NM5Y0Fl5ExKpMiKbXD46b684ec"
+const API_TOKEN = "85|FIJoppe3rkA0DBSYtXJmrd7HYBHvDwQXNmBwLecabf31e216"
 
 // Global state to persist tasks across component re-renders
 let globalTasks: Task[] = []
@@ -56,22 +57,15 @@ export const useTasks = () => {
       setError(null)
       globalError = null
 
-      const response = await fetch(API_URL, {
-        method: "POST",
+      const response = await axios.post<ApiResponse>(API_URL, {}, {
         headers: {
           Authorization: `Bearer ${API_TOKEN}`,
           "Content-Type": "application/json",
         },
       })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data: ApiResponse = await response.json()
-
-      if (data.status && data.message) {
-        const transformedTasks = data.message.map(transformApiTask)
+      if (response.data.status && response.data.message) {
+        const transformedTasks = response.data.message.map(transformApiTask)
         setTasks(transformedTasks)
         updateGlobalState(transformedTasks, false, null)
       } else {
@@ -101,8 +95,8 @@ export const useTasks = () => {
       globalLoading = false
     }
   }
-
-  const updateAndFetchTasks = async () => {
+  
+ const updateAndFetchTasks = async () => {
     try {
       setLoading(true)
       globalLoading = true
@@ -110,22 +104,15 @@ export const useTasks = () => {
       globalError = null
 
       // First call the update API
-      const updateResponse = await fetch(UPDATE_API_URL, {
-        method: "POST",
+      const updateResponse = await axios.post<ApiResponse>(UPDATE_API_URL, {}, {
         headers: {
           Authorization: `Bearer ${API_TOKEN}`,
           "Content-Type": "application/json",
         },
       })
 
-      if (!updateResponse.ok) {
-        throw new Error(`Update API error! status: ${updateResponse.status}`)
-      }
-
-      const updateData: ApiResponse = await updateResponse.json()
-
-      if (updateData.status && updateData.message) {
-        const transformedTasks = updateData.message.map(transformApiTask)
+      if (updateResponse.data.status && updateResponse.data.message) {
+        const transformedTasks = updateResponse.data.message.map(transformApiTask)
         setTasks(transformedTasks)
         updateGlobalState(transformedTasks, false, null)
       } else {
@@ -156,28 +143,19 @@ export const useTasks = () => {
       setIsSearching(true)
       setError(null)
 
-      // Create form data for the search query
       const formData = new URLSearchParams()
       formData.append("query", query)
 
-      const response = await fetch(SEARCH_API_URL, {
-        method: "POST",
+      const response = await axios.post(SEARCH_API_URL, formData, {
         headers: {
           Authorization: `Bearer ${API_TOKEN}`,
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: formData,
       })
 
-      if (!response.ok) {
-        throw new Error(`Search API error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-
       // Fix: Update the response structure parsing
-      if (data.data && data.data.status && data.data.mail && Array.isArray(data.data.mail)) {
-        const transformedTasks = data.data.mail.map(transformApiTask)
+      if (response.data.data && response.data.data.status && response.data.data.mail && Array.isArray(response.data.data.mail)) {
+        const transformedTasks = response.data.data.mail.map(transformApiTask)
         setTasks(transformedTasks)
         updateGlobalState(transformedTasks, false, null)
       } else {
