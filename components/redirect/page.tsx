@@ -2,9 +2,8 @@
 
 import { motion, useAnimation } from "framer-motion"
 import { useSearchParams, useRouter } from "next/navigation"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import Cookies from "js-cookie"
-import axios from "axios"
 import { Mail, CheckCircle, Sparkles, Zap, Shield } from "lucide-react"
 import Customloader from "../custom-loader/customloader"
 
@@ -20,8 +19,6 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
   const [currentStep, setCurrentStep] = useState<number>(0)
   const searchParams = useSearchParams()
   const router = useRouter()
-
-  const hasCalledAPI = useRef(false) // 🔒 Prevent double call
 
   const steps = [
     { icon: Shield, text: "Authenticating...", color: "from-blue-500 to-cyan-500" },
@@ -43,13 +40,9 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
     } else {
       console.log("Token missing")
     }
-  }, [searchParams])
+  }, [searchParams, router])
 
   useEffect(() => {
-    if (!token || hasCalledAPI.current) return
-
-    hasCalledAPI.current = true // ✅ Prevent duplicate calls
-
     const sequence = async () => {
       await controls.start({
         scale: [1, 1.05, 1],
@@ -58,40 +51,43 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
       })
     }
 
-    const progressSequence = async () => {
-      await progressControls.start({
-        width: "100%",
-        transition: { duration: 4, ease: "easeInOut" },
-      })
+   const progressSequence = async () => {
+  await progressControls.start({
+    width: "100%",
+    transition: { duration: 4, ease: "easeInOut" },
+  })
 
-      try {
-        const response = await axios.post(
-          "http://mailsync.l4it.net/api/update_mail",
-          {},
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-
-        if (response.data?.status) {
-          setTimeout(() => {
-            router.push("/dashboard")
-          }, 500)
-        }
-      } catch (error) {
-        console.error("Error:", error)
-        setTimeout(() => {
-          router.push("/dashboard")
-        }, 500)
+  // Add your API call here
+  try {
+    const response = await fetch('http://mailsync.l4it.net/api/update_mail', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`
       }
+    });
+    const result = await response.json();
+
+    if (result.status) {
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 500);
     }
+  } catch (error) {
+    console.error('Error:', error);
+    // Fallback redirect if API fails
+    setTimeout(() => {
+      router.push("/dashboard");
+    }, 500);
+  }
+}
 
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
         const newProgress = prev + 1.5
+
+        // Update current step based on progress
         if (newProgress >= 25 && currentStep < 1) setCurrentStep(1)
         if (newProgress >= 50 && currentStep < 2) setCurrentStep(2)
         if (newProgress >= 85 && currentStep < 3) setCurrentStep(3)
@@ -112,7 +108,7 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
       progressControls.stop()
       clearInterval(progressInterval)
     }
-  },  [controls, progressControls, router, currentStep,token])
+  }, [controls, progressControls, router, currentStep,token])
 
   if (!token) {
     return (
