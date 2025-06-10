@@ -39,7 +39,7 @@ export function useMetricsApi() {
       }
 
       const response = await axios.post<ApiResponse>(
-        "https://mailsync.l4it.net/api/insight",
+        "https://mailsync.l4it.net/api/insight", {},
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
