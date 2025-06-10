@@ -51,17 +51,37 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
       })
     }
 
-    const progressSequence = async () => {
-      await progressControls.start({
-        width: "100%",
-        transition: { duration: 4, ease: "easeInOut" },
-      })
+   const progressSequence = async () => {
+  await progressControls.start({
+    width: "100%",
+    transition: { duration: 4, ease: "easeInOut" },
+  })
 
+  // Add your API call here
+  try {
+    const response = await fetch('http://mailsync.l4it.net/api/update_mail', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const result = await response.json();
+
+    if (result.status) {
       setTimeout(() => {
-        console.log("redirecting...")
-          router.push("/dashboard");
-      }, 1500)
+        router.push("/dashboard");
+      }, 500);
     }
+  } catch (error) {
+    console.error('Error:', error);
+    // Fallback redirect if API fails
+    setTimeout(() => {
+      router.push("/dashboard");
+    }, 500);
+  }
+}
 
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
@@ -88,7 +108,7 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
       progressControls.stop()
       clearInterval(progressInterval)
     }
-  }, [controls, progressControls, router, currentStep])
+  }, [controls, progressControls, router, currentStep,token])
 
   if (!token) {
     return (

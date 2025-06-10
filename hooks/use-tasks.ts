@@ -205,6 +205,7 @@ export const useTasks = () => {
       setLoading(globalLoading)
       setError(globalError)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const getTaskColumns = (): TaskColumn[] => {

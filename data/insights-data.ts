@@ -1,8 +1,5 @@
 import type {
   MetricCardData,
-  WeeklyActivityData,
-  SentimentData,
-  CategoryData,
   FocusTimeData,
   AISuggestion,
 } from "@/types/insights"

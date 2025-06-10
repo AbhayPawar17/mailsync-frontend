@@ -173,7 +173,7 @@ export default function SyncMail() {
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              className="px-6 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
+              className="px-6 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium cursor-pointer"
             >
               Cancel
             </motion.button>
@@ -184,7 +184,7 @@ export default function SyncMail() {
                 whileTap={{ scale: 0.97 }}
                 onClick={handleConfirmSync}
                 disabled={!selectedProvider}
-                className={`px-6 py-3 rounded-xl font-medium transition-all ${
+                className={`px-6 py-3 rounded-xl font-medium transition-all cursor-pointer ${
                   selectedProvider
                     ? "bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-200 dark:shadow-violet-900/30"
                     : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
