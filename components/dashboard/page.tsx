@@ -570,8 +570,8 @@ export default function CalendarDashboard() {
               <div className="relative z-10">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                <h2 className="text-2xl font-bold mb-2">Let&apos;s get started! 👋</h2>                    
-                <p className="text-slate-300 text-sm">Here&apos;s what&apos;s on your agenda today</p>
+                    <h2 className="text-2xl font-bold mb-2">Good morning, Abhay! 👋</h2>
+                    <p className="text-slate-300 text-sm">Here&apos;s what&apos;s on your agenda today</p>
                   </div>
                   <div className="flex items-center space-x-4 text-xs">
                     <div className="flex items-center space-x-1 bg-white/10 rounded-full px-3 py-1.5 backdrop-blur-sm">
