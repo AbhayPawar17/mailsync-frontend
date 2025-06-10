@@ -1,6 +1,6 @@
 "use client"
 
-import { Mail, Reply, Check, Calendar, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react"
+import { Mail, Reply, Check, Calendar, TrendingUp, TrendingDown } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { MetricCardData } from "@/types/insights"
 
@@ -20,43 +20,41 @@ export function MetricCard({ metric, index }: MetricCardProps) {
         return <Check className="w-5 h-5" />
       case "calendar":
         return <Calendar className="w-5 h-5" />
-      case "urgent":
-        return <AlertTriangle className="w-5 h-5" />
       default:
         return <Mail className="w-5 h-5" />
     }
   }
 
-  const getGradientAndColors = ( index: number) => {
+  const getGradientAndColors = (iconName: string, index: number) => {
     const gradients = [
       {
         bg: "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200",
         icon: "text-blue-600",
         title: "text-blue-700",
         value: "text-blue-900",
-        change: "text-blue-600",
+        change: "text-blue-600"
       },
       {
         bg: "bg-gradient-to-br from-green-50 to-green-100 border-green-200",
         icon: "text-green-600",
         title: "text-green-700",
         value: "text-green-900",
-        change: "text-green-600",
+        change: "text-green-600"
       },
       {
         bg: "bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200",
         icon: "text-purple-600",
         title: "text-purple-700",
         value: "text-purple-900",
-        change: "text-purple-600",
+        change: "text-purple-600"
       },
       {
-        bg: "bg-gradient-to-br from-red-50 to-red-100 border-red-200",
-        icon: "text-red-600",
-        title: "text-red-700",
-        value: "text-red-900",
-        change: "text-red-600",
-      },
+        bg: "bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200",
+        icon: "text-orange-600",
+        title: "text-orange-700",
+        value: "text-orange-900",
+        change: "text-orange-600"
+      }
     ]
     return gradients[index % gradients.length]
   }
@@ -67,29 +65,35 @@ export function MetricCard({ metric, index }: MetricCardProps) {
     return null
   }
 
-  const colors = getGradientAndColors(index)
+  const colors = getGradientAndColors(metric.icon, index)
 
   return (
-    <Card
+    <Card 
       className={`${colors.bg} shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform border-0`}
       style={{
         animationDelay: `${index * 100}ms`,
       }}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className={`text-sm font-medium ${colors.title}`}>{metric.title}</CardTitle>
-        <div className={colors.icon}>{getIcon(metric.icon)}</div>
+        <CardTitle className={`text-sm font-medium ${colors.title}`}>
+          {metric.title}
+        </CardTitle>
+        <div className={colors.icon}>
+          {getIcon(metric.icon)}
+        </div>
       </CardHeader>
       <CardContent>
         <div className={`text-3xl font-bold ${colors.value}`}>
           {metric.value}
-          <span className={`text-lg font-normal ${colors.change} ml-1`}>{metric.unit}</span>
+          <span className={`text-lg font-normal ${colors.change} ml-1`}>
+            {metric.unit}
+          </span>
         </div>
         <div className="flex items-center mt-2">
           <span className={`text-sm font-medium flex items-center gap-1 ${colors.change}`}>
             {getChangeIcon(metric.change)}
             {metric.change > 0 ? "+" : ""}
-            {metric.change}%
+            {metric.change}
             {metric.unit === "%" ? "%" : ""}
           </span>
         </div>

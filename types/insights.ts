@@ -6,8 +6,6 @@ export interface MetricCardData {
   change: number
   icon: string
   color: string
-  
-
 }
 
 export interface WeeklyActivityData {

@@ -4,7 +4,6 @@ import { useEffect } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { ScrollToTop } from "@/components/scroll-to-top"
 import { useEmailStore } from "@/hooks/use-email-store"
-import { useMetricsApi } from "@/hooks/use-insights"
 import { KanbanBoard } from "@/components/kanban-board"
 import { MetricCard } from "@/components/metric-card"
 import { WeeklyActivityChart } from "@/components/weekly-activity-chart"
@@ -12,7 +11,11 @@ import { SentimentChart } from "@/components/sentiment-chart"
 import { CategoryChart } from "@/components/category-chart"
 import { FocusTimeChart } from "@/components/focus-time-chart"
 import { AISuggestions } from "@/components/ai-suggestions"
-import { focusTimeData, aiSuggestions } from "@/data/insights-data"
+import {
+  metricsData,
+  focusTimeData,
+  aiSuggestions,
+} from "@/data/insights-data"
 import CalendarDashboard from "@/components/dashboard/page"
 
 export default function TaskManagementApp() {
@@ -26,8 +29,6 @@ export default function TaskManagementApp() {
     sidebarCollapsed,
   } = useEmailStore()
 
-  const { metricsData: apiMetricsData, loading: metricsLoading, error: metricsError } = useMetricsApi()
-
   useEffect(() => {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 300)
@@ -39,7 +40,7 @@ export default function TaskManagementApp() {
   const renderCurrentPage = () => {
     switch (currentPage) {
       case "dashboard":
-        return <CalendarDashboard />
+        return <CalendarDashboard/>
       case "insights":
         return (
           <div className="flex-1 p-4 sm:p-6 overflow-auto">
@@ -53,36 +54,21 @@ export default function TaskManagementApp() {
                 </p>
               </div>
 
-              {metricsLoading ? (
-                <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="bg-white rounded-lg p-4 animate-pulse">
-                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                      <div className="h-8 bg-gray-200 rounded"></div>
-                    </div>
-                  ))}
-                </div>
-              ) : metricsError ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-                  Error loading metrics: {metricsError}
-                </div>
-              ) : (
-                <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-                  {apiMetricsData.map((metric, index: number) => (
-                    <MetricCard key={metric.id} metric={metric} index={index} />
-                  ))}
-                </div>
-              )}
+              <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+                {metricsData.map((metric, index) => (
+                  <MetricCard key={metric.id} metric={metric} index={index} />
+                ))}
+              </div>
 
               <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-1">
                   <WeeklyActivityChart />
                 </div>
                 <div className="lg:col-span-1">
-                  <SentimentChart />
+                  <SentimentChart  />
                 </div>
                 <div className="lg:col-span-1">
-                  <CategoryChart />
+                  <CategoryChart/>
                 </div>
               </div>
 
@@ -110,7 +96,9 @@ export default function TaskManagementApp() {
           setCurrentPage={setCurrentPage}
         />
 
-        <div className={`flex-1 flex flex-col min-w-0 ${sidebarCollapsed ? "ml-0" : ""}`}>{renderCurrentPage()}</div>
+        <div className={`flex-1 flex flex-col min-w-0 ${sidebarCollapsed ? "ml-0" : ""}`}>
+          {renderCurrentPage()}
+        </div>
       </div>
 
       <ScrollToTop showScrollTop={showScrollTop} />
