@@ -4,7 +4,6 @@ import { useEffect } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { ScrollToTop } from "@/components/scroll-to-top"
 import { useEmailStore } from "@/hooks/use-email-store"
-import CalendarPage from "../calendar/page"
 import { KanbanBoard } from "@/components/kanban-board"
 import { MetricCard } from "@/components/metric-card"
 import { WeeklyActivityChart } from "@/components/weekly-activity-chart"
@@ -17,7 +16,7 @@ import {
   focusTimeData,
   aiSuggestions,
 } from "@/data/insights-data"
-import Dashboard from "@/components/dashboard/page"
+import CalendarDashboard from "@/components/dashboard/page"
 
 export default function TaskManagementApp() {
   const {
@@ -41,9 +40,7 @@ export default function TaskManagementApp() {
   const renderCurrentPage = () => {
     switch (currentPage) {
       case "dashboard":
-        return <Dashboard/>
-      case "calendar":
-        return <CalendarPage />
+        return <CalendarDashboard/>
       case "insights":
         return (
           <div className="flex-1 p-4 sm:p-6 overflow-auto">

@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Cookies from "js-cookie"
 import { Mail, CheckCircle, Sparkles, Zap, Shield } from "lucide-react"
+import Customloader from "../custom-loader/customloader"
 
 interface RedirectComponentProps {
   provider?: string
@@ -110,13 +111,15 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
             className="w-8 h-8 border-3 border-cyan-400 border-t-transparent rounded-full mx-auto"
           />
         </div>
-        <motion.p
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
-          className="ml-6 text-white/80 font-medium"
-        >
-          Loading...
-        </motion.p>
+        <div className="flex items-center justify-center min-h-screen">
+          <motion.p
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+            className="ml-6 text-white/80 font-medium"
+          >
+            <Customloader/>
+          </motion.p>
+        </div>
       </div>
     )
   }

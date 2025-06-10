@@ -11,7 +11,7 @@ interface SidebarProps {
   sidebarCollapsed: boolean
   setSidebarCollapsed: (collapsed: boolean) => void
   currentPage: string
-  setCurrentPage: (page: "dashboard" | "calendar" | "email" | "insights") => void
+  setCurrentPage: (page: "dashboard" | "email" | "insights") => void
 }
 
 export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, setCurrentPage }: SidebarProps) {
@@ -111,7 +111,7 @@ export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, se
               <Button
                 key={item.label}
                 variant={item.active ? "default" : "ghost"}
-                onClick={() => setCurrentPage(item.label.toLowerCase() as "dashboard" | "calendar" | "email" | "insights")}
+                onClick={() => setCurrentPage(item.label.toLowerCase() as "dashboard" | "email" | "insights")}
                 className={`w-full cursor-pointer ${sidebarCollapsed ? "justify-center" : "justify-start"} ${
                   item.active
                     ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"

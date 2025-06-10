@@ -71,7 +71,7 @@ export default function AIEmailLandingPage() {
       name: "David Rodriguez",
       role: "Operations Manager",
       company: "LogiFlow",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "https://thetyee.ca/WhatWorks/2023/11/14/MassTimberJustinBrown.JPG",
       quote: "The automation features have reduced my email processing time by 70%. I can finally focus on strategic work instead of inbox management.",
       rating: 5
     },
@@ -79,7 +79,7 @@ export default function AIEmailLandingPage() {
       name: "Emily Watson",
       role: "Product Manager",
       company: "DesignHub",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "https://richardsonlab.mcdb.ucsb.edu/sites/default/files/styles/medium_square/public/2021-07/Katie-web.jpg?itok=RufcKzo7",
       quote: "The AI's ability to understand context and suggest relevant replies is incredible. It feels like having a personal assistant for email.",
       rating: 5
     }

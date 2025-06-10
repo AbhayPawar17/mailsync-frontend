@@ -8,7 +8,8 @@ const nextConfig: NextConfig = {
       'lh3.googleusercontent.com', 
       'avatars.githubusercontent.com', 
       'workolyk.com','upload.wikimedia.org',
-      'admissionsight.com', 'img.freepik.com','tse4.mm.bing.net',
+      'admissionsight.com', 'img.freepik.com','tse4.mm.bing.net','thetyee.ca',
+      'richardsonlab.mcdb.ucsb.edu',
       'www.pngall.com', 'i0.wp.com' , 'online.iotap.in', 'i.pinimg.com'
     ],
   },

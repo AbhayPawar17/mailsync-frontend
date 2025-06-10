@@ -4,7 +4,7 @@ import RedirectComponent from "@/components/redirect/page";
 
 export default function Redirect() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div></div>}>
       <RedirectComponent />
     </Suspense>
   );
