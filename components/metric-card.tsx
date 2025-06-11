@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import Cookies from 'js-cookie'
 import { Mail, Reply, Check, Calendar, TrendingUp, TrendingDown, Users, BarChart3 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -37,15 +38,6 @@ interface MetricCardProps {
   index: number
 }
 
-// API configuration
-const API_CONFIG = {
-  url: 'https://mailsync.l4it.net/api/insight',
-  headers: {
-    'Authorization': 'Bearer 175|e7aHSRn1IxJqgZXDL7ZGccEJThBDDroYwu6xIGts68b65586',
-    'Content-Type': 'application/json'
-  }
-}
-
 export function MetricCard({ metric, index }: MetricCardProps) {
   const [apiData, setApiData] = useState<ApiResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -55,12 +47,19 @@ export function MetricCard({ metric, index }: MetricCardProps) {
     fetchInsightData()
   }, [])
 
-  const fetchInsightData = async () => {
+   const fetchInsightData = async () => {
     try {
       setLoading(true)
-      const response = await fetch(API_CONFIG.url, {
+
+      const authToken = Cookies.get('authToken') // Read from cookies
+      if (!authToken) throw new Error('No auth token found in cookies.')
+
+      const response = await fetch('https://mailsync.l4it.net/api/insight', {
         method: 'POST',
-        headers: API_CONFIG.headers,
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        }
       })
 
       if (!response.ok) {
@@ -264,9 +263,16 @@ export function useInsightData() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const response = await fetch(API_CONFIG.url, {
+
+      const authToken = Cookies.get('authToken') 
+      if (!authToken) throw new Error('No auth token found in cookies.')
+
+       const response = await fetch('https://mailsync.l4it.net/api/insight', {
         method: 'POST',
-        headers: API_CONFIG.headers,
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        }
       })
 
       if (!response.ok) {

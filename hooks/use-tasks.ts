@@ -73,7 +73,7 @@ export const useTasks = () => {
         {},
         {
           headers: {
-            Authorization: `Bearer 174|kGujokPiSGxRzSGmLdhLSgOelXoX4da10x40usoac0af93c9`,
+            Authorization: `Bearer ${authToken}`,
             "Content-Type": "application/json",
           },
         },
