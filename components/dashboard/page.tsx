@@ -3,9 +3,6 @@
 import { useState, useEffect } from "react"
 import {
   CalendarIcon,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   Filter,
   List,
@@ -18,140 +15,14 @@ import {
   X,
   CheckCircle,
   Circle,
+  ExternalLink,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-
-// Types
-interface Task {
-  id: string
-  title: string
-  description?: string
-  priority: "High" | "Medium" | "Low"
-  status: "To Do" | "In Progress" | "Done"
-  dueDate?: string
-  assignedTo?: string
-}
-
-interface CalendarTask {
-  id: number
-  title: string
-  description: string
-  priority: string
-  status: string
-  dueDate: string
-  assignee: string
-  isAIExtracted?: boolean
-}
-
-interface Meeting {
-  id: number
-  title: string
-  time: string
-  duration: string
-  attendees: string[]
-  location: string
-  priority: string
-}
-
-// Data
-const todaysMeetings: Meeting[] = [
-  {
-    id: 1,
-    title: "Product Strategy Review",
-    time: "9:00 AM",
-    duration: "1h",
-    attendees: ["Sarah Chen", "Mike Johnson", "Alex Rivera"],
-    location: "Conference Room A",
-    priority: "High",
-  },
-  {
-    id: 2,
-    title: "Client Presentation - TechCorp",
-    time: "11:30 AM",
-    duration: "45m",
-    attendees: ["Jennifer Walsh", "David Kim"],
-    location: "Zoom",
-    priority: "High",
-  },
-  {
-    id: 3,
-    title: "Team Standup",
-    time: "2:00 PM",
-    duration: "30m",
-    attendees: ["Development Team"],
-    location: "Teams",
-    priority: "Medium",
-  },
-  {
-    id: 4,
-    title: "Budget Planning Q4",
-    time: "4:00 PM",
-    duration: "1h 30m",
-    attendees: ["Finance Team", "Leadership"],
-    location: "Board Room",
-    priority: "Medium",
-  },
-]
-
-const tasks: CalendarTask[] = [
-  {
-    id: 1,
-    title: "Prepare presentation for client meeting",
-    description: "Create slides for the TechCorp client presentation",
-    priority: "High",
-    status: "In Progress",
-    dueDate: "2023-06-10T14:00:00Z",
-    assignee: "You",
-  },
-  {
-    id: 2,
-    title: "Review Q2 budget proposal",
-    description: "Review and provide feedback on the Q2 budget proposal",
-    priority: "Medium",
-    status: "To Do",
-    dueDate: "2023-06-12T17:00:00Z",
-    assignee: "You",
-  },
-  {
-    id: 3,
-    title: "Update project documentation",
-    description: "Update the project documentation with the latest changes",
-    priority: "Low",
-    status: "To Do",
-    dueDate: "2023-06-15T12:00:00Z",
-    assignee: "Alex Rivera",
-  },
-  {
-    id: 4,
-    title: "Send follow-up email to client",
-    description: "Send a follow-up email to the client regarding the project status",
-    priority: "Medium",
-    status: "Done",
-    dueDate: "2023-06-08T10:00:00Z",
-    assignee: "You",
-  },
-  {
-    id: 5,
-    title: "Schedule team building activity",
-    description: "Coordinate with HR to schedule a team building activity",
-    priority: "Low",
-    status: "In Progress",
-    dueDate: "2023-06-20T16:00:00Z",
-    assignee: "Jennifer Walsh",
-  },
-  {
-    id: 6,
-    title: "Prepare for quarterly review",
-    description: "Gather data and prepare for the quarterly review meeting",
-    priority: "High",
-    status: "To Do",
-    dueDate: "2023-06-14T09:00:00Z",
-    assignee: "You",
-    isAIExtracted: true,
-  },
-]
+import type { Task } from "@/types/task"
+import Cookies from "js-cookie"
+import { CardContent } from "@/components/ui/card"
 
 // TaskCard Component
 interface TaskCardProps {
@@ -238,7 +109,7 @@ function TaskCard({ task, onClick }: TaskCardProps) {
 export default function CalendarDashboard() {
   const [selectedTaskFilter, setSelectedTaskFilter] = useState("All")
   const [calendarView, setCalendarView] = useState<"List" | "Calendar">("List")
-  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
+  const [selectedMeeting, setSelectedMeeting] = useState<Task | null>(null)
   const [currentDate, setCurrentDate] = useState<Date | null>(null)
   const [mounted, setMounted] = useState(false)
 
@@ -246,29 +117,134 @@ export default function CalendarDashboard() {
   useEffect(() => {
     setCurrentDate(new Date())
     setMounted(true)
+
+    // Set a demo auth token for testing
+    if (!Cookies.get("authToken")) {
+      Cookies.set("authToken", "demo-token")
+    }
   }, [])
 
-  const taskFilters = ["All", "To Do", "In Progress", "Done", "AI AI-Extracted"]
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [error, setError] = useState<string | null>(null)
 
-  // Convert CalendarTask to Task for compatibility with TaskCard
-  const convertToTaskType = (calendarTask: CalendarTask): Task => {
-    return {
-      id: calendarTask.id.toString(),
-      title: calendarTask.title,
-      description: calendarTask.description,
-      priority:
-        calendarTask.priority === "High" || calendarTask.priority === "Medium" || calendarTask.priority === "Low"
-          ? calendarTask.priority
-          : "Medium",
-      status: calendarTask.status === "To Do" || calendarTask.status === "In Progress" ? calendarTask.status : "To Do",
-      dueDate: calendarTask.dueDate,
-      assignedTo: calendarTask.assignee,
+  useEffect(() => {
+    const fetchTasks = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const authToken = Cookies.get("authToken")
+        if (!authToken) {
+          throw new Error("Authentication token not found")
+        }
+
+        const response = await fetch("/api/tasks", {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch tasks: ${response.status} - ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        setTasks(data)
+      } catch (e: any) {
+        setError(e.message || "Failed to fetch tasks")
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
-  const filteredTasks = tasks.filter((task) => {
+    fetchTasks()
+  }, [])
+
+
+  // Filter meetings from tasks - only actual meetings for today
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  const meetings = tasks.filter((task) => {
+    // Must be in Meeting category
+    if (task.category !== "Meeting") return false
+    
+    // Exclude email notifications and non-meeting items
+    const excludeKeywords = ["trying to reach you", "sent a message", "new messages", "notification", "email", "chat"]
+    
+    const titleLower = task.title.toLowerCase()
+    const hasExcludedKeyword = excludeKeywords.some((keyword) => titleLower.includes(keyword))
+    
+    if (hasExcludedKeyword) return false
+    
+    return true
+  })
+
+  // Mock data for tasks (original)
+  const mockTasks = [
+    {
+      id: "1",
+      title: "Prepare presentation for client meeting",
+      description: "Create slides for the TechCorp client presentation",
+      priority: "High",
+      status: "In Progress",
+      dueDate: "2023-06-10T14:00:00Z",
+      assignedTo: "You",
+    },
+    {
+      id: "2",
+      title: "Review Q2 budget proposal",
+      description: "Review and provide feedback on the Q2 budget proposal",
+      priority: "Medium",
+      status: "To Do",
+      dueDate: "2023-06-12T17:00:00Z",
+      assignedTo: "You",
+    },
+    {
+      id: "3",
+      title: "Update project documentation",
+      description: "Update the project documentation with the latest changes",
+      priority: "Low",
+      status: "To Do",
+      dueDate: "2023-06-15T12:00:00Z",
+      assignedTo: "Alex Rivera",
+    },
+    {
+      id: "4",
+      title: "Send follow-up email to client",
+      description: "Send a follow-up email to the client regarding the project status",
+      priority: "Medium",
+      status: "Done",
+      dueDate: "2023-06-08T10:00:00Z",
+      assignedTo: "You",
+    },
+    {
+      id: "5",
+      title: "Schedule team building activity",
+      description: "Coordinate with HR to schedule a team building activity",
+      priority: "Low",
+      status: "In Progress",
+      dueDate: "2023-06-20T16:00:00Z",
+      assignedTo: "Jennifer Walsh",
+    },
+    {
+      id: "6",
+      title: "Prepare for quarterly review",
+      description: "Gather data and prepare for the quarterly review meeting",
+      priority: "High",
+      status: "To Do",
+      dueDate: "2023-06-14T09:00:00Z",
+      assignedTo: "You",
+    },
+  ]
+
+  const taskFilters = ["All", "To Do", "In Progress", "Done"]
+
+  const filteredTasks = mockTasks.filter((task) => {
     if (selectedTaskFilter === "All") return true
-    if (selectedTaskFilter === "AI AI-Extracted") return task.isAIExtracted
     return task.status === selectedTaskFilter
   })
 
@@ -321,7 +297,33 @@ export default function CalendarDashboard() {
     }
   }
 
-  const MeetingCard = ({ meeting }: { meeting: Meeting }) => (
+  const getSentimentColor = (sentiment?: string) => {
+    switch (sentiment) {
+      case "Positive":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+      case "Negative":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+      case "Neutral":
+        return "bg-gray-50 text-black-100 dark:bg-gray-900/30 dark:text-gray"
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+    }
+  }
+
+  const sentimentEmoji = (sentiment?: string) => {
+    switch (sentiment) {
+      case "Positive":
+        return "😊"
+      case "Negative":
+        return "😞"
+      case "Neutral":
+        return "😐"
+      default:
+        return ""
+    }
+  }
+
+  const MeetingCard = ({ meeting }: { meeting: Task }) => (
     <Card
       className={`mb-2 cursor-pointer hover:shadow-md transition-all duration-300 hover:scale-[1.01] transform border-l-4 ${getPriorityColor(meeting.priority)}`}
       onClick={() => setSelectedMeeting(meeting)}
@@ -336,38 +338,68 @@ export default function CalendarDashboard() {
           </div>
         </div>
 
+        {meeting.sentimental && (
+          <Badge className={`${getSentimentColor(meeting.sentimental)} text-xs px-2 py-1 mb-2`}>
+            {sentimentEmoji(meeting.sentimental)} {meeting.sentimental}
+          </Badge>
+        )}
+
         <div className="flex items-center justify-between text-xs mt-2">
           <div className="flex items-center text-slate-600 dark:text-slate-400">
             <Clock className="w-3 h-3 mr-1 text-blue-500" />
-            <span>{meeting.time}</span>
-            {meeting.duration && <span className="ml-1">({meeting.duration})</span>}
+            <span>
+              {new Date(meeting.created_at || "").toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
           </div>
 
-          {meeting.location && (
+          {meeting.description && (
             <div className="flex items-center text-slate-600 dark:text-slate-400">
               <MapPin className="w-3 h-3 mr-1 text-red-500" />
-              <span>{meeting.location}</span>
+              <span className="truncate max-w-32">{meeting.description.split(",")[0]}</span>
             </div>
           )}
         </div>
 
         <div className="flex items-start justify-between text-xs mt-2">
-          <div className="flex items-center text-slate-600 dark:text-slate-400">
-            <Users className="w-3 h-3 mr-1 text-purple-500" />
-            <span>{meeting.attendees.length} attendees</span>
+          <div className="flex flex-col gap-1">
+            {meeting.fromName && (
+              <div className="flex items-center text-slate-600 dark:text-slate-400">
+                <User className="w-3 h-3 mr-1 text-purple-500" />
+                <span>{meeting.fromName}</span>
+              </div>
+            )}
+
+            {meeting.created_at && (
+              <div className="flex items-center text-slate-600 dark:text-slate-400">
+                <CalendarIcon className="w-3 h-3 mr-1 text-yellow-500" />
+                <span>{new Date(meeting.created_at).toLocaleDateString()}</span>
+              </div>
+            )}
           </div>
+
+          {meeting.fromEmail && (
+            <div className="flex items-center text-slate-600 dark:text-slate-400">
+              <User className="w-3 h-3 mr-1 text-green-500" />
+              <span className="truncate max-w-20">{meeting.fromEmail}</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
   )
 
-  const MeetingDetailModal = ({ meeting }: { meeting: Meeting }) => (
+  const MeetingDetailModal = ({ meeting }: { meeting: Task }) => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{meeting.title}</h2>
+              {meeting.category && (
+                <Badge variant="secondary" className="bg-blue-500 text-white text-sm">
+                  {meeting.category}
+                </Badge>
+              )}
             </div>
             <Button
               variant="ghost"
@@ -380,35 +412,58 @@ export default function CalendarDashboard() {
           </div>
 
           <div className="space-y-4 mb-6">
-            <div className="flex items-center text-slate-600 dark:text-slate-400">
-              <Clock className="w-5 h-5 mr-3" />
-              <span className="text-lg">{meeting.time}</span>
-              {meeting.duration && <span className="ml-2">({meeting.duration})</span>}
-            </div>
-
-            {meeting.location && (
+            {meeting.created_at && (
               <div className="flex items-center text-slate-600 dark:text-slate-400">
-                <MapPin className="w-5 h-5 mr-3" />
-                <span className="text-lg">{meeting.location}</span>
+                <Clock className="w-5 h-5 mr-3" />
+                <span className="text-lg">{new Date(meeting.created_at).toLocaleString()}</span>
+              </div>
+            )}
+
+            {meeting.description && (
+              <div className="flex items-start text-slate-600 dark:text-slate-400">
+                <MapPin className="w-5 h-5 mr-3 mt-1" />
+                <span className="text-lg">{meeting.description}</span>
+              </div>
+            )}
+
+            {meeting.actionLink && (
+              <div className="flex items-center text-blue-600 dark:text-blue-400">
+                <ExternalLink className="w-5 h-5 mr-3" />
+                <a
+                  href={meeting.actionLink.split(",")[0]}
+                  className="text-lg hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Join Meeting
+                </a>
               </div>
             )}
 
             <div className="flex items-center text-slate-600 dark:text-slate-400">
               <Users className="w-5 h-5 mr-3" />
-              <span className="text-lg">{meeting.attendees.length} attendees</span>
+              <span className="text-lg">From: {meeting.fromName}</span>
             </div>
           </div>
 
-          <div className="mb-6">
-            <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Attendees</h3>
-            <div className="space-y-2">
-              {meeting.attendees.map((attendee, idx) => (
-                <div key={idx} className="text-slate-600 dark:text-slate-400">
-                  {attendee}
-                </div>
-              ))}
+          {meeting.sentimental && (
+            <div className="mb-6">
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Sentiment</h3>
+              <Badge className={`${getSentimentColor(meeting.sentimental)} text-md px-3 py-1.5`}>
+                {sentimentEmoji(meeting.sentimental)} {meeting.sentimental}
+              </Badge>
             </div>
-          </div>
+          )}
+
+          {meeting.fromEmail && (
+            <div className="mb-6">
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Contact</h3>
+              <div className="flex items-center text-slate-600 dark:text-slate-400">
+                <User className="w-5 h-5 mr-2" />
+                <span>{meeting.fromEmail}</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -423,11 +478,24 @@ export default function CalendarDashboard() {
 
   // Get meetings for the current time slot (simplified for demo)
   const getMeetingsForHour = (hour: string) => {
-    const [hourNum, ampm] = hour.split(" ")
+    if (!currentDate) return []
 
-    return todaysMeetings.filter((meeting) => {
-      const meetingTime = meeting.time
-      return meetingTime.startsWith(`${hourNum}:`) && meetingTime.includes(ampm)
+    const [hourNum, ampm] = hour.split(" ")
+    const hourInt = Number.parseInt(hourNum) + (ampm === "PM" && hourNum !== "12" ? 12 : 0)
+
+    return meetings.filter((meeting) => {
+      if (!meeting.created_at) return false
+      const meetingDate = new Date(meeting.created_at)
+
+      // Check if it's the same day as currentDate
+      const currentDateCopy = new Date(currentDate)
+      currentDateCopy.setHours(0, 0, 0, 0)
+      const meetingDateCopy = new Date(meetingDate)
+      meetingDateCopy.setHours(0, 0, 0, 0)
+
+      if (currentDateCopy.getTime() !== meetingDateCopy.getTime()) return false
+
+      return meetingDate.getHours() === hourInt
     })
   }
 
@@ -442,50 +510,13 @@ export default function CalendarDashboard() {
       )
     }
 
-    const formattedDate = currentDate.toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    })
 
     const dayNumber = currentDate.getDate()
     const dayName = currentDate.toLocaleDateString("en-US", { weekday: "long" })
 
-    const goToToday = () => setCurrentDate(new Date())
-    const goToPreviousDay = () => {
-      if (currentDate) {
-        const prevDay = new Date(currentDate)
-        prevDay.setDate(prevDay.getDate() - 1)
-        setCurrentDate(prevDay)
-      }
-    }
-    const goToNextDay = () => {
-      if (currentDate) {
-        const nextDay = new Date(currentDate)
-        nextDay.setDate(nextDay.getDate() + 1)
-        setCurrentDate(nextDay)
-      }
-    }
 
     return (
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-        {/* Calendar Header */}
-        <div className="flex items-center p-2 border-b border-slate-200 dark:border-slate-700">
-          <Button variant="outline" size="sm" onClick={goToToday} className="flex items-center mr-2">
-            <CalendarIcon className="w-4 h-4 mr-1" />
-            Today
-          </Button>
-          <Button variant="ghost" size="icon" onClick={goToPreviousDay} className="mr-1">
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={goToNextDay}>
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" className="ml-2 font-medium text-slate-900 dark:text-white">
-            {formattedDate}
-            <ChevronDown className="w-4 h-4 ml-1" />
-          </Button>
-        </div>
 
         {/* Day Header */}
         <div className="border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
@@ -498,7 +529,7 @@ export default function CalendarDashboard() {
         {/* Time Grid */}
         <div className="overflow-y-auto max-h-[600px]">
           {hours.map((hour) => {
-            const meetings = getMeetingsForHour(hour)
+            const hourMeetings = getMeetingsForHour(hour)
 
             return (
               <div key={hour} className="flex border-b border-slate-200 dark:border-slate-700 min-h-[60px]">
@@ -506,7 +537,7 @@ export default function CalendarDashboard() {
                   {hour}
                 </div>
                 <div className="flex-1 p-1 relative">
-                  {meetings.map((meeting) => (
+                  {hourMeetings.map((meeting) => (
                     <div
                       key={meeting.id}
                       onClick={() => setSelectedMeeting(meeting)}
@@ -519,7 +550,11 @@ export default function CalendarDashboard() {
                       <div className="font-medium text-sm text-slate-900 dark:text-white">{meeting.title}</div>
                       <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center mt-1">
                         <Clock className="w-3 h-3 mr-1" />
-                        {meeting.time} - {meeting.duration}
+                        {new Date(meeting.created_at || "").toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                        {meeting.fromName && <span className="ml-2">- {meeting.fromName}</span>}
                       </div>
                     </div>
                   ))}
@@ -570,13 +605,13 @@ export default function CalendarDashboard() {
               <div className="relative z-10">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h2 className="text-2xl font-bold mb-2">Let&apos;s get started! 👋</h2>
+                    <h2 className="text-2xl font-bold mb-2">Good morning, Abhay! 👋</h2>
                     <p className="text-slate-300 text-sm">Here&apos;s what&apos;s on your agenda today</p>
                   </div>
                   <div className="flex items-center space-x-4 text-xs">
                     <div className="flex items-center space-x-1 bg-white/10 rounded-full px-3 py-1.5 backdrop-blur-sm">
                       <CalendarIcon className="w-3 h-3" />
-                      <span>{todaysMeetings.length} meetings</span>
+                      <span>{meetings.length} meetings today</span>
                     </div>
                     <div className="flex items-center space-x-1 bg-white/10 rounded-full px-3 py-1.5 backdrop-blur-sm">
                       <Sparkles className="w-3 h-3" />
@@ -622,23 +657,37 @@ export default function CalendarDashboard() {
               </div>
 
               {/* Today's Meetings */}
-              <div>
-                {calendarView === "List" ? (
-                  <div>
-                    <div className="flex items-center space-x-2 mb-4">
-                      <CalendarIcon className="w-5 h-5 text-blue-600" />
-                      <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Today&apos;s Meetings</h2>
+              {loading ? (
+                <div className="flex justify-center items-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+              ) : (
+                <div>
+                  {calendarView === "List" ? (
+                    <div>
+                      <div className="flex items-center space-x-2 mb-4">
+                        <CalendarIcon className="w-5 h-5 text-blue-600" />
+                        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Today&apos;s Meetings</h2>
+                      </div>
+                      {meetings.length === 0 ? (
+                        <div className="text-center py-8 text-slate-500">
+                          <CalendarIcon className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+                          <h3 className="text-lg font-medium mb-2">No meetings scheduled for today</h3>
+                          <p>Your calendar is clear! Time to focus on other tasks.</p>
+                        </div>
+                      ) : (
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          {meetings.map((meeting) => (
+                            <MeetingCard key={meeting.id} meeting={meeting} />
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {todaysMeetings.map((meeting) => (
-                        <MeetingCard key={meeting.id} meeting={meeting} />
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <DayViewCalendar />
-                )}
-              </div>
+                  ) : (
+                    <DayViewCalendar />
+                  )}
+                </div>
+              )}
             </div>
 
             {/* AI Suggestions - Right Side */}
@@ -723,11 +772,21 @@ export default function CalendarDashboard() {
             </div>
 
             {/* Tasks Grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredTasks.map((task) => (
-                <TaskCard key={task.id} task={convertToTaskType(task)} onClick={() => {}} />
-              ))}
-            </div>
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+              </div>
+            ) : filteredTasks.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                No tasks found. Try selecting a different category or refreshing.
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {filteredTasks.map((task) => (
+                  <TaskCard key={task.id} task={task} onClick={() => setSelectedMeeting(task)} />
+                ))}
+              </div>
+            )}
           </div>
         </main>
       </div>

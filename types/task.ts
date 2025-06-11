@@ -10,7 +10,7 @@ export interface ApiTask {
   description: string
   due_at: string
   action_link: string
-  priority: "Critical" | "High" | "Medium" | "Low"
+  priority: string
   graph_id: string
 }
 
@@ -23,8 +23,8 @@ export interface Task {
   id: string
   title: string
   description: string
-  priority: "Critical" | "High" | "Medium" | "Low"
-  status: "To Do" | "In Progress" | "Blocked" | "Completed"
+  priority: string
+  status: string
   dueDate?: string
   progress?: {
     completed: number

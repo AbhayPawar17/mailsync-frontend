@@ -15,9 +15,9 @@ let globalLoading = false
 let globalError: string | null = null
 let isInitialized = false
 
-  const getToken = () => {
-    return Cookies.get('authToken') || '' // Returns empty string if cookie not found
-  }
+const getToken = () => {
+  return Cookies.get("authToken") || "" // Returns empty string if cookie not found
+}
 
 // Transform API task to internal task format
 const transformApiTask = (apiTask: ApiTask): Task => {
@@ -54,7 +54,7 @@ export const useTasks = () => {
     globalError = newError
   }
 
-   const fetchTasks = async () => {
+  const fetchTasks = async () => {
     const authToken = getToken()
     if (!authToken) {
       setError("Authentication token not found")
@@ -68,12 +68,16 @@ export const useTasks = () => {
       setError(null)
       globalError = null
 
-      const response = await axios.post<ApiResponse>(API_URL, {}, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
+      const response = await axios.post<ApiResponse>(
+        API_URL,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer 174|kGujokPiSGxRzSGmLdhLSgOelXoX4da10x40usoac0af93c9`,
+            "Content-Type": "application/json",
+          },
         },
-      })
+      )
 
       if (response.data.status && response.data.message) {
         const transformedTasks = response.data.message.map(transformApiTask)
@@ -121,12 +125,16 @@ export const useTasks = () => {
       globalError = null
 
       // First call the update API
-      const updateResponse = await axios.post<ApiResponse>(UPDATE_API_URL, {}, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
+      const updateResponse = await axios.post<ApiResponse>(
+        UPDATE_API_URL,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+          },
         },
-      })
+      )
 
       if (updateResponse.data.status && updateResponse.data.message) {
         const transformedTasks = updateResponse.data.message.map(transformApiTask)
@@ -149,7 +157,7 @@ export const useTasks = () => {
     }
   }
 
-   const searchTasks = async (query: string) => {
+  const searchTasks = async (query: string) => {
     const authToken = getToken()
     if (!authToken) {
       setError("Authentication token not found")
@@ -175,7 +183,12 @@ export const useTasks = () => {
         },
       })
 
-      if (response.data.data && response.data.data.status && response.data.data.mail && Array.isArray(response.data.data.mail)) {
+      if (
+        response.data.data &&
+        response.data.data.status &&
+        response.data.data.mail &&
+        Array.isArray(response.data.data.mail)
+      ) {
         const transformedTasks = response.data.data.mail.map(transformApiTask)
         setTasks(transformedTasks)
         updateGlobalState(transformedTasks, false, null)
@@ -205,12 +218,14 @@ export const useTasks = () => {
       setLoading(globalLoading)
       setError(globalError)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const getTaskColumns = (): TaskColumn[] => {
     // Get unique categories from tasks, filtering out undefined values
-    const categories = Array.from(new Set(tasks.map((task) => task.category).filter((category): category is string => Boolean(category))))
+    const categories = Array.from(
+      new Set(tasks.map((task) => task.category).filter((category): category is string => Boolean(category))),
+    )
 
     // If no categories, use a default
     if (categories.length === 0) {
@@ -225,17 +240,17 @@ export const useTasks = () => {
           if (a.created_at && b.created_at) {
             const dateA = new Date(a.created_at).getTime()
             const dateB = new Date(b.created_at).getTime()
-            
+
             // Sort by latest first (descending order)
             if (dateA !== dateB) {
               return dateB - dateA
             }
           }
-          
+
           // Handle cases where one or both dates are missing
           if (a.created_at && !b.created_at) return -1
           if (!a.created_at && b.created_at) return 1
-          
+
           // Secondary sort: by priority if dates are the same or missing
           const priorityOrder = { Critical: 0, High: 1, Medium: 2, Low: 3 }
           const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] ?? 4

@@ -1,11 +1,14 @@
 "use client"
 
-import { Columns, Plus, Sparkles, Zap, Menu, X } from "lucide-react"
+import { Columns, LogOut, Zap, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getSidebarItems, folderItems } from "@/data/email-data"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import Cookies from "js-cookie"
+import { toast } from "sonner"
 
 interface SidebarProps {
   sidebarCollapsed: boolean
@@ -16,6 +19,7 @@ interface SidebarProps {
 
 export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, setCurrentPage }: SidebarProps) {
   const isMobile = useIsMobile()
+  const router = useRouter()
 
   // Auto-collapse sidebar on mobile, but don't force it
   useEffect(() => {
@@ -28,6 +32,37 @@ export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, se
       }
     }
   }, [isMobile, sidebarCollapsed, setSidebarCollapsed])
+
+  const handleLogout = async () => {
+    try {
+      const authToken = Cookies.get('authToken')
+      if (!authToken) {
+        toast.error('No authentication token found')
+        return
+      }
+
+      const response = await fetch('https://mailsync.l4it.net/api/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        // Remove cookie and redirect
+        Cookies.remove('authToken')
+        toast.success('Logged out successfully')
+        router.push('/')
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.message || 'Logout failed')
+      }
+    } catch (error) {
+      console.error('Logout error:', error)
+      toast.error('An error occurred during logout')
+    }
+  }
 
   return (
     <>
@@ -57,9 +92,8 @@ export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, se
         } bg-gradient-to-b from-slate-800 to-slate-900 dark:from-gray-900 dark:to-slate-900 border-r border-slate-700 dark:border-gray-800 flex flex-col transition-all duration-500 ease-in-out`}
       >
         {/* Professional Logo */}
-<div className={`border-b border-slate-700 dark:border-gray-800 ${sidebarCollapsed ? "px-3 py-4" : "p-6"}`}>
-  <div className={`flex items-center space-x-2 ${sidebarCollapsed ? "justify-start" : ""}`}>
-
+        <div className={`border-b border-slate-700 dark:border-gray-800 ${sidebarCollapsed ? "px-3 py-4" : "p-6"}`}>
+          <div className={`flex items-center space-x-2 ${sidebarCollapsed ? "justify-start" : ""}`}>
             <div className="relative">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 rounded-lg flex items-center justify-center transition-all duration-300 hover:shadow-lg">
                 <Zap className="w-5 h-5 text-white" />
@@ -105,35 +139,30 @@ export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, se
             </div>
           )}
           <nav className="space-y-1">
-      {getSidebarItems(currentPage)
-        .filter((item) => item.label.toLowerCase() !== "tasks")
-        .map((item, index) => (
-              <Button
-                key={item.label}
-                variant={item.active ? "default" : "ghost"}
-                onClick={() => setCurrentPage(item.label.toLowerCase() as "dashboard" | "email" | "insights")}
-                className={`w-full cursor-pointer ${sidebarCollapsed ? "justify-center" : "justify-start"} ${
-                  item.active
-                    ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700 dark:hover:bg-gray-800"
-                } transition-all duration-300 hover:scale-105 transform`}
-                style={{
-                  transitionDelay: `${index * 50}ms`,
-                }}
-              >
-                <item.icon className="w-4 h-4" />
-                {!sidebarCollapsed && (
-                  <>
-                    <span className="ml-3">{item.label}</span>
-                    {/* {item.count && (
-                      <Badge variant="secondary" className="ml-auto bg-slate-600 text-slate-200">
-                        {item.count}
-                      </Badge>
-                    )} */}
-                  </>
-                )}
-              </Button>
-            ))}
+            {getSidebarItems(currentPage)
+              .filter((item) => item.label.toLowerCase() !== "tasks")
+              .map((item, index) => (
+                <Button
+                  key={item.label}
+                  variant={item.active ? "default" : "ghost"}
+                  onClick={() => setCurrentPage(item.label.toLowerCase() as "dashboard" | "email" | "insights")}
+                  className={`w-full cursor-pointer ${sidebarCollapsed ? "justify-center" : "justify-start"} ${
+                    item.active
+                      ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
+                      : "text-slate-300 hover:text-white hover:bg-slate-700 dark:hover:bg-gray-800"
+                  } transition-all duration-300 hover:scale-105 transform`}
+                  style={{
+                    transitionDelay: `${index * 50}ms`,
+                  }}
+                >
+                  <item.icon className="w-4 h-4" />
+                  {!sidebarCollapsed && (
+                    <>
+                      <span className="ml-3">{item.label}</span>
+                    </>
+                  )}
+                </Button>
+              ))}
           </nav>
         </div>
 
@@ -160,34 +189,23 @@ export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, se
                   <item.icon className="w-4 h-4" />
                   {!sidebarCollapsed && <span className="ml-3">{item.label}</span>}
                 </div>
-                {/* {!sidebarCollapsed && item.count && (
-                  <Badge variant="secondary" className="bg-slate-600 text-slate-200">
-                    {item.count}
-                  </Badge>
-                )} */}
               </Button>
             ))}
           </nav>
         </div>
 
-        {/* Create Button */}
-          <div className="p-4 border-t border-slate-700 dark:border-gray-800">
-            <Button
-              className={`w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 transition-all duration-300 hover:scale-105 transform hover:shadow-lg ${
-                sidebarCollapsed ? "justify-center px-2" : ""
-              }`}
-            >
-              <Plus className="w-4 h-4" />
-              
-              {!sidebarCollapsed && (
-                <>
-                  <span className="ml-2">Create</span>
-                  <Sparkles className="w-4 h-4 ml-auto opacity-70" />
-                </>
-              )}
-            </Button>
-          </div>
-
+        {/* Logout Button */}
+        <div className="p-4 border-t border-slate-700 dark:border-gray-800">
+          <Button
+            onClick={handleLogout}
+            className={`w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 transition-all duration-300 hover:scale-105 transform hover:shadow-lg cursor-pointer ${
+              sidebarCollapsed ? "justify-center px-2" : ""
+            }`}
+          >
+            <LogOut className="w-4 h-4" />
+            {!sidebarCollapsed && <span className="ml-2">Logout</span>}
+          </Button>
+        </div>
       </div>
 
       {/* Mobile Overlay */}
