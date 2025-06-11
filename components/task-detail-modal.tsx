@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { useState, useEffect } from "react"
+import { toast } from "sonner";
 import type { Task } from "@/types/task"
 import DOMPurify from 'dompurify'
 import axios from "axios"
@@ -38,6 +39,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
   const [selectedOptionIndices, setSelectedOptionIndices] = useState<number[]>([])
   const [isEditing, setIsEditing] = useState(false)
   const [draftResponse, setDraftResponse] = useState("")
+  const [isSending, setIsSending] = useState(false);
 
   // Reset all reply-related state when modal closes or task changes
   useEffect(() => {
@@ -117,6 +119,56 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
       setIsGeneratingReply(false)
     }
   }
+
+  const handleSendReply = async () => {
+  if (!emailResponse || isSending) {
+    toast.error("Please write or generate a reply before sending");
+    return;
+  }
+
+  if (!task?.graphId) {
+    toast.error("No graph ID available for this task");
+    return;
+  }
+
+  const authToken = getAuthToken();
+  if (!authToken) {
+    toast.error("Authentication token not found");
+    return;
+  }
+
+  setIsSending(true); // Set sending state to true
+
+  try {
+    const formData = new FormData();
+    formData.append("graph_id", task.graphId);
+    formData.append("reply_message", htmlToEditableText(emailResponse));
+
+    await toast.promise(
+      axios.post("https://mailsync.l4it.net/api/reply", formData, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      }),
+      {
+        loading: "Sending reply...",
+        success: () => {
+          handleClose();
+          return "Reply sent successfully!";
+        },
+        error: (error) => {
+          console.error("Error sending reply:", error);
+          return error.response?.data?.message || "Failed to send reply";
+        },
+      }
+    );
+  } catch (err) {
+    console.error("Error in send reply:", err);
+    toast.error("An unexpected error occurred");
+  } finally {
+    setIsSending(false); // Reset sending state
+  }
+};
 
   const htmlToEditableText = (html: string) => {
     if (!html) return '';
@@ -227,8 +279,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
                 <CheckCircle className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Task Details</h2>
-                <p className="text-xs text-slate-600 dark:text-slate-400">Comprehensive task management</p>
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Email Details</h2>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -434,16 +485,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
         <div className="border-t border-slate-200/50 dark:border-slate-700/50 p-3 sm:p-4 bg-gradient-to-r from-slate-50/80 to-white/80 dark:from-slate-900/80 dark:to-slate-800/80 backdrop-blur-sm shrink-0">
           <div className="flex flex-wrap gap-1 sm:gap-2 items-center justify-between">
             <div className="flex flex-wrap gap-1 sm:gap-2">
-              <Button className="text-xs px-3 py-1 sm:px-4 sm:py-2 rounded-lg h-8">
-                Update Status
-              </Button>
-              <Button variant="outline" className="text-xs px-3 py-1 sm:px-4 sm:py-2 rounded-lg border h-8">
-                Add Comment
-              </Button>
-              <Button variant="outline" className="text-xs px-3 py-1 sm:px-4 sm:py-2 rounded-lg border h-8">
-                Attach File
-              </Button>
-            </div>
+
             <Button
               variant="outline"
               onClick={handleClose}
@@ -451,6 +493,14 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
             >
               Close
             </Button>
+            </div>
+                       <Button 
+                className="text-xs px-3 py-1 sm:px-4 sm:py-2 rounded-lg h-8 cursor-pointer"
+                onClick={handleSendReply}
+                disabled={!emailResponse}
+              >
+                Send
+              </Button>
           </div>
         </div>
       </div>

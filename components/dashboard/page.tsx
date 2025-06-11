@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react"
 import {
   CalendarIcon,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Filter,
   List,
@@ -126,8 +129,12 @@ export default function CalendarDashboard() {
 
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null)
+
+  const [aiSuggestions, setAiSuggestions] = useState<{ [key: string]: string[] }>({})
+  const [aiSuggestionsLoading, setAiSuggestionsLoading] = useState(true)
+  const [aiSuggestionsError, setAiSuggestionsError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -161,6 +168,82 @@ export default function CalendarDashboard() {
     fetchTasks()
   }, [])
 
+  useEffect(() => {
+    const fetchAiSuggestions = async () => {
+      setAiSuggestionsLoading(true)
+      setAiSuggestionsError(null)
+      try {
+        const authToken = Cookies.get("authToken")
+        if (!authToken) {
+          throw new Error("Authentication token not found")
+        }
+
+        const response = await fetch("https://mailsync.l4it.net/api/full_suggestion", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch AI suggestions: ${response.status}`)
+        }
+
+        const data = await response.json()
+        if (data.status && data.message && Array.isArray(data.message)) {
+          // Process and categorize suggestions
+          const categorizedSuggestions: { [key: string]: string[] } = {}
+          let currentCategory = ""
+
+          data.message.forEach((item: string) => {
+            if (item.trim() === "") return // Skip empty lines
+
+            if (item.startsWith("**") && item.endsWith("**")) {
+              // This is a category header
+              currentCategory = item.replace(/\*\*/g, "").trim()
+              categorizedSuggestions[currentCategory] = []
+            } else if (currentCategory && item.trim()) {
+              // This is a suggestion item
+              const cleanedItem = item.replace(/^\d+\.\s*/, "") // Remove numbering
+              categorizedSuggestions[currentCategory].push(cleanedItem)
+            }
+          })
+
+          setAiSuggestions(categorizedSuggestions)
+        } else {
+          throw new Error("Invalid API response format")
+        }
+      } catch (err) {
+        console.error("Error fetching AI suggestions:", err)
+        const errorMessage = err instanceof Error ? err.message : "Failed to fetch AI suggestions"
+        setAiSuggestionsError(errorMessage)
+
+        // Fallback to mock data if API fails
+        const mockSuggestions = {
+          Meetings: [
+            "Join the ongoing meeting with Meeting ID: 273 874 380 709 3 and Passcode: DZ7d82aj.",
+            "Attend the Dev Team meeting now with Meeting ID: 286 905 698 779 6 and Passcode: UQ75tB3d.",
+          ],
+          "Urgent Tasks": [
+            "Check your email for an urgent message containing an authentication token.",
+            "The server is down and requires immediate attention.",
+          ],
+          General: [
+            "Consider scheduling focused work time from 9-11 AM when you receive fewer emails",
+            "Your most productive day is Wednesday - try scheduling important tasks then",
+          ],
+        }
+        setAiSuggestions(mockSuggestions)
+      } finally {
+        setAiSuggestionsLoading(false)
+      }
+    }
+
+    if (mounted) {
+      fetchAiSuggestions()
+    }
+  }, [mounted])
 
   // Filter meetings from tasks - only actual meetings for today
   const today = new Date()
@@ -171,15 +254,30 @@ export default function CalendarDashboard() {
   const meetings = tasks.filter((task) => {
     // Must be in Meeting category
     if (task.category !== "Meeting") return false
-    
+
     // Exclude email notifications and non-meeting items
     const excludeKeywords = ["trying to reach you", "sent a message", "new messages", "notification", "email", "chat"]
-    
+
     const titleLower = task.title.toLowerCase()
     const hasExcludedKeyword = excludeKeywords.some((keyword) => titleLower.includes(keyword))
-    
+
     if (hasExcludedKeyword) return false
-    
+
+    // Only include meetings that have actual meeting indicators
+    const meetingKeywords = ["meeting", "review", "standup", "presentation", "kickoff", "planning", "sync"]
+
+    const hasMeetingKeyword = meetingKeywords.some((keyword) => titleLower.includes(keyword))
+
+    // Must have meeting keywords or action links (Teams meeting links)
+    if (!hasMeetingKeyword && !task.actionLink) return false
+
+    // Filter for today's meetings only
+    if (task.created_at) {
+      const taskDate = new Date(task.created_at)
+      taskDate.setHours(0, 0, 0, 0)
+      return taskDate.getTime() === today.getTime()
+    }
+
     return true
   })
 
@@ -247,29 +345,6 @@ export default function CalendarDashboard() {
     if (selectedTaskFilter === "All") return true
     return task.status === selectedTaskFilter
   })
-
-  const aiSuggestions = [
-    {
-      id: 1,
-      description: "Consider scheduling focused work time from 9-11 AM when you receive fewer emails",
-    },
-    {
-      id: 2,
-      description: "Your most productive day is Wednesday - try scheduling important tasks then",
-    },
-    {
-      id: 3,
-      description: "You have 3 emails from Sarah Johnson that need responses",
-    },
-    {
-      id: 4,
-      description: "Consider setting up auto-replies for marketing emails (15% of your inbox)",
-    },
-    {
-      id: 5,
-      description: "Your meeting with Client XYZ tends to run over - consider scheduling buffer time",
-    },
-  ]
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -510,13 +585,50 @@ export default function CalendarDashboard() {
       )
     }
 
+    const formattedDate = currentDate.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    })
 
     const dayNumber = currentDate.getDate()
     const dayName = currentDate.toLocaleDateString("en-US", { weekday: "long" })
 
+    const goToToday = () => setCurrentDate(new Date())
+    const goToPreviousDay = () => {
+      if (currentDate) {
+        const prevDay = new Date(currentDate)
+        prevDay.setDate(prevDay.getDate() - 1)
+        setCurrentDate(prevDay)
+      }
+    }
+    const goToNextDay = () => {
+      if (currentDate) {
+        const nextDay = new Date(currentDate)
+        nextDay.setDate(nextDay.getDate() + 1)
+        setCurrentDate(nextDay)
+      }
+    }
 
     return (
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        {/* Calendar Header */}
+        <div className="flex items-center p-2 border-b border-slate-200 dark:border-slate-700">
+          <Button variant="outline" size="sm" onClick={goToToday} className="flex items-center mr-2">
+            <CalendarIcon className="w-4 h-4 mr-1" />
+            Today
+          </Button>
+          <Button variant="ghost" size="icon" onClick={goToPreviousDay} className="mr-1">
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={goToNextDay}>
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" className="ml-2 font-medium text-slate-900 dark:text-white">
+            {formattedDate}
+            <ChevronDown className="w-4 h-4 ml-1" />
+          </Button>
+        </div>
 
         {/* Day Header */}
         <div className="border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
@@ -605,7 +717,7 @@ export default function CalendarDashboard() {
               <div className="relative z-10">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h2 className="text-2xl font-bold mb-2">Good morning, Abhay! 👋</h2>
+                    <h2 className="text-2xl font-bold mb-2">Let&apos;s get started!👋</h2>
                     <p className="text-slate-300 text-sm">Here&apos;s what&apos;s on your agenda today</p>
                   </div>
                   <div className="flex items-center space-x-4 text-xs">
@@ -615,7 +727,11 @@ export default function CalendarDashboard() {
                     </div>
                     <div className="flex items-center space-x-1 bg-white/10 rounded-full px-3 py-1.5 backdrop-blur-sm">
                       <Sparkles className="w-3 h-3" />
-                      <span>{aiSuggestions.length} suggestions</span>
+                      <span>
+                        {aiSuggestionsLoading
+                          ? "Loading..."
+                          : `${Object.values(aiSuggestions).flat().length} suggestions`}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -626,7 +742,7 @@ export default function CalendarDashboard() {
           {/* Calendar and AI Suggestions Side by Side */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
             {/* Calendar Section - Left Side */}
-            <div className="lg:col-span-8 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg p-4 sm:p-6">
+            <div className="lg:col-span-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg p-4 sm:p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
@@ -691,36 +807,59 @@ export default function CalendarDashboard() {
             </div>
 
             {/* AI Suggestions - Right Side */}
-            <div className="lg:col-span-4 bg-gradient-to-r from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-xl border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm shadow-lg p-4 sm:p-6">
+            <div className="lg:col-span-6 bg-gradient-to-r from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-xl border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm shadow-lg p-4 sm:p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-3">
                   <Sparkles className="w-6 h-6 text-purple-600" />
                   <h2 className="font-bold text-xl text-purple-700 dark:text-purple-400">AI Suggestions</h2>
-                  <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400 font-semibold px-3 py-1 text-sm shadow-sm">
-                    {aiSuggestions.length}
-                  </Badge>
+                  {!aiSuggestionsLoading && (
+                    <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400 font-semibold px-3 py-1 text-sm shadow-sm">
+                      {Object.values(aiSuggestions).flat().length}
+                    </Badge>
+                  )}
                 </div>
               </div>
 
-              <div className="space-y-3">
-                {aiSuggestions.map((suggestion) => (
-                  <div
-                    key={suggestion.id}
-                    className="flex items-start space-x-3 p-4 rounded-xl bg-white/70 dark:bg-slate-800/70 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-sm hover:shadow-md border border-white/50 dark:border-slate-700/50"
-                  >
-                    <div className="flex-shrink-0 mt-1">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center">
-                        <Sparkles className="w-4 h-4 text-white" />
+              {aiSuggestionsLoading ? (
+                <div className="flex justify-center items-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
+                </div>
+              ) : aiSuggestionsError ? (
+                <div className="text-center py-8 text-red-500">
+                  <p className="font-medium">Error loading AI suggestions:</p>
+                  <p className="text-sm">{aiSuggestionsError}</p>
+                </div>
+              ) : (
+                <div className="max-h-[600px] overflow-y-auto space-y-4 pr-2">
+                  {Object.entries(aiSuggestions).map(([category, suggestions]) => (
+                    <div key={category} className="space-y-3">
+                      {/* Category Header */}
+                      <div className="flex items-center space-x-2 mb-3">
+                        <div className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500"></div>
+                        <h3 className="font-semibold text-lg text-purple-800 dark:text-purple-300">{category}</h3>
+                        <div className="flex-1 h-px bg-gradient-to-r from-purple-200 to-transparent dark:from-purple-700"></div>
                       </div>
+
+                      {/* Category Suggestions */}
+                      {suggestions.map((suggestion, index) => (
+                        <div
+                          key={index}
+                          className="flex items-start space-x-3 p-4 rounded-xl bg-white/70 dark:bg-slate-800/70 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-sm hover:shadow-md border border-white/50 dark:border-slate-700/50"
+                        >
+                          <div className="flex-shrink-0 mt-1">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center">
+                              <Sparkles className="w-4 h-4 text-white" />
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{suggestion}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {suggestion.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
