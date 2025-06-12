@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getSidebarItems, folderItems } from "@/data/email-data"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Cookies from "js-cookie"
 import { toast } from "sonner"
@@ -20,6 +20,7 @@ interface SidebarProps {
 export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, setCurrentPage }: SidebarProps) {
   const isMobile = useIsMobile()
   const router = useRouter()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   // Auto-collapse sidebar on mobile, but don't force it
   useEffect(() => {
@@ -34,10 +35,12 @@ export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, se
   }, [isMobile, sidebarCollapsed, setSidebarCollapsed])
 
   const handleLogout = async () => {
+    setIsLoggingOut(true)
     try {
       const authToken = Cookies.get('authToken')
       if (!authToken) {
         toast.error('No authentication token found')
+        setIsLoggingOut(false)
         return
       }
 
@@ -57,10 +60,12 @@ export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, se
       } else {
         const errorData = await response.json()
         toast.error(errorData.message || 'Logout failed')
+        setIsLoggingOut(false)
       }
     } catch (error) {
       console.error('Logout error:', error)
       toast.error('An error occurred during logout')
+      setIsLoggingOut(false)
     }
   }
 
@@ -198,12 +203,27 @@ export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, se
         <div className="p-4 border-t border-slate-700 dark:border-gray-800">
           <Button
             onClick={handleLogout}
+            disabled={isLoggingOut}
             className={`w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 transition-all duration-300 hover:scale-105 transform hover:shadow-lg cursor-pointer ${
               sidebarCollapsed ? "justify-center px-2" : ""
             }`}
           >
-            <LogOut className="w-4 h-4" />
-            {!sidebarCollapsed && <span className="ml-2">Logout</span>}
+            {isLoggingOut ? (
+              <div className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {!sidebarCollapsed && <span>
+                    Logging out...
+                  </span>}
+              </div>
+            ) : (
+              <>
+                <LogOut className="w-4 h-4" />
+                {!sidebarCollapsed && <span className="ml-2">Logout</span>}
+              </>
+            )}
           </Button>
         </div>
       </div>

@@ -16,7 +16,7 @@ let globalError: string | null = null
 let isInitialized = false
 
 const getToken = () => {
-  return Cookies.get("authToken") || "" // Returns empty string if cookie not found
+  return Cookies.get("authToken")
 }
 
 // Transform API task to internal task format
@@ -27,14 +27,14 @@ const transformApiTask = (apiTask: ApiTask): Task => {
     description: apiTask.description,
     priority: apiTask.priority,
     status: "To Do", // Default status, not used for columns anymore
-    dueDate: apiTask.due_at !== "NA" ? apiTask.due_at : undefined,
+    due_at: apiTask.due_at && apiTask.due_at !== "NA" ? apiTask.due_at : undefined,
     created_at: apiTask.created_at,
     assignedTo: apiTask.from_name,
     category: apiTask.category,
     sentimental: apiTask.sentimental,
     fromName: apiTask.from_name,
     fromEmail: apiTask.from_email,
-    actionLink: apiTask.action_link !== "NA" ? apiTask.action_link : undefined,
+    actionLink: apiTask.action_link && apiTask.action_link !== "NA" ? apiTask.action_link : undefined,
     graphId: apiTask.graph_id,
   }
 }
@@ -55,18 +55,15 @@ export const useTasks = () => {
   }
 
   const fetchTasks = async () => {
-    const authToken = getToken()
-    if (!authToken) {
-      setError("Authentication token not found")
-      updateGlobalState([], false, "Authentication token not found")
-      return
-    }
+     const authToken = getToken()
 
     try {
       setLoading(true)
       globalLoading = true
       setError(null)
       globalError = null
+
+      console.log("Fetching tasks from API...")
 
       const response = await axios.post<ApiResponse>(
         API_URL,
@@ -79,8 +76,16 @@ export const useTasks = () => {
         },
       )
 
+      console.log("API Response:", response.data)
+
       if (response.data.status && response.data.message) {
         const transformedTasks = response.data.message.map(transformApiTask)
+        console.log("Transformed tasks:", transformedTasks)
+
+        // Log meetings specifically
+        const meetings = transformedTasks.filter((task) => task.category === "Meeting")
+        console.log("Meetings found:", meetings)
+
         setTasks(transformedTasks)
         updateGlobalState(transformedTasks, false, null)
       } else {
@@ -92,19 +97,6 @@ export const useTasks = () => {
       setError(errorMessage)
       updateGlobalState([], false, errorMessage)
 
-      // Fallback to mock data if API fails
-      const mockTasks: Task[] = [
-        {
-          id: "1",
-          title: "Sample Task",
-          description: "This is a sample task while API is unavailable",
-          priority: "Medium",
-          status: "To Do",
-          assignedTo: "System",
-        },
-      ]
-      setTasks(mockTasks)
-      updateGlobalState(mockTasks, false, errorMessage)
     } finally {
       setLoading(false)
       globalLoading = false
@@ -113,10 +105,6 @@ export const useTasks = () => {
 
   const updateAndFetchTasks = async () => {
     const authToken = getToken()
-    if (!authToken) {
-      setError("Authentication token not found")
-      return
-    }
 
     try {
       setLoading(true)
@@ -159,10 +147,6 @@ export const useTasks = () => {
 
   const searchTasks = async (query: string) => {
     const authToken = getToken()
-    if (!authToken) {
-      setError("Authentication token not found")
-      return
-    }
 
     if (!query.trim()) {
       await fetchTasks()
