@@ -37,31 +37,38 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
     }
   }
 
-  const getSentimentColor = (sentiment?: string) => {
-    switch (sentiment) {
-      case "Positive | positive":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-      case "Negative | negative":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-      case "Neutral | neutral":
-        return "bg-gray-50 text-black-100 dark:bg-gray-900/30 dark:text-gray"
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
-    }
+ const getSentimentColor = (sentiment?: string) => {
+  if (!sentiment) {
+    return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400";
   }
 
-  const sentimentEmoji = (sentiment?: string) => {
-    switch (sentiment) {
-      case "Positive | positive":
-        return "😊"
-      case "Negative | negative":
-        return "😞"
-      case "Neutral | neutral":
-        return "😐"
-      default:
-        return ""
-    }
+  const lowerSentiment = sentiment.toLowerCase();
+  switch (lowerSentiment) {
+    case "positive":
+      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+    case "negative":
+      return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+    case "neutral":
+      return "bg-gray-50 text-black-100 dark:bg-gray-900/30 dark:text-gray";
+    default:
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400";
   }
+};
+
+  const sentimentEmoji = (sentiment?: string) => {
+  if (!sentiment) return ""; 
+  
+  switch (sentiment.toLowerCase()) { 
+    case "positive":
+      return "😊";
+    case "negative":
+      return "😞";
+    case "neutral":
+      return "😐";
+    default:
+      return "";
+  }
+};
 
   return (
     <Card

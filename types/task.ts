@@ -30,6 +30,7 @@ export interface Task {
   priority: string
   status: string
   due_at?: string
+  task_completed?: string
   progress?: {
     completed: number
     total: number

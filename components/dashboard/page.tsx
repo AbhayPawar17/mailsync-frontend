@@ -14,6 +14,7 @@ import {
   Circle,
   ExternalLink,
   AlertCircle,
+  Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -145,20 +146,61 @@ const RealTaskCard = memo(
       }
     }
 
-
-
     return (
       <Card
         className={`cursor-pointer hover:shadow-md transition-all duration-300 hover:scale-[1.01] transform border-l-4 ${getPriorityColor(task.priority || "Normal")}`}
         onClick={onClick}
       >
         <CardContent className="p-4">
-          <div className="flex items-start justify-between mb-2">
+          <div className="flex items-start justify-between">
             <div className="flex items-center gap-2 flex-1">
-              <h3 className="font-medium text-slate-900 dark:text-white">{task.title}</h3>
+              {task.task_completed === "1" ? (
+                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+              ) : (
+                <Circle className="w-5 h-5 text-slate-400 flex-shrink-0" />
+              )}
+              <h3
+                className={`font-medium text-slate-900 dark:text-white ${
+                  task.task_completed === "1" ? "text-slate-400 dark:text-slate-500" : ""
+                }`}
+              >
+                {task.title}
+              </h3>
             </div>
-
+            {task.task_completed === "1" ? (
+              <Badge
+                variant="outline"
+                className="text-xs text-green-600 border-green-300 bg-green-50 dark:bg-green-900/20"
+              >
+                Completed
+              </Badge>
+            ) : (
+              task.priority && (
+                <Badge
+                  className={`text-xs ${
+                    task.priority === "High"
+                      ? "bg-red-500 text-white"
+                      : task.priority === "Medium" || task.priority === "Normal"
+                        ? "bg-amber-500 text-white"
+                        : "bg-emerald-500 text-white"
+                  }`}
+                >
+                  {task.priority}
+                </Badge>
+              )
+            )}
           </div>
+
+          {task.description && task.description !== "NA" && (
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 line-clamp-2">{task.description}</p>
+          )}
+
+          {task.due_at && task.due_at !== "NA" && (
+            <div className="flex items-center mt-2 text-xs text-slate-500">
+              <Clock className="w-3 h-3 mr-1" />
+              <span>{new Date(task.due_at).toLocaleDateString()}</span>
+            </div>
+          )}
         </CardContent>
       </Card>
     )
@@ -170,23 +212,25 @@ RealTaskCard.displayName = "RealTaskCard"
 const CalendarDashboard = memo(() => {
   const [selectedTaskFilter, setSelectedTaskFilter] = useState("All")
   const [selectedMeeting, setSelectedMeeting] = useState<Task | null>(null)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentDate, setCurrentDate] = useState<Date | null>(null)
   const [mounted, setMounted] = useState(false)
 
   // State for UI rendering
   const [tasks, setTasks] = useState<Task[]>(globalTasksData)
   const [loading, setLoading] = useState(!globalInitialized)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null)
 
   const [aiSuggestions, setAiSuggestions] = useState<{ [key: string]: string[] }>(globalAiSuggestions)
   const [aiSuggestionsLoading, setAiSuggestionsLoading] = useState(!globalAiInitialized)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [aiSuggestionsError, setAiSuggestionsError] = useState<string | null>(null)
 
   // Add these new state variables after the existing state declarations
   const [realTasks, setRealTasks] = useState<Task[]>([])
+  const [completedTasks, setCompletedTasks] = useState<Task[]>([])
+  const [isLoadingCompleted, setIsLoadingCompleted] = useState(false)
   const [tasksLoading, setTasksLoading] = useState(false)
   const [tasksError, setTasksError] = useState<string | null>(null)
   const [showAddTaskModal, setShowAddTaskModal] = useState(false)
@@ -454,6 +498,49 @@ const CalendarDashboard = memo(() => {
     }
   }
 
+  const fetchCompletedTasks = async () => {
+    setIsLoadingCompleted(true)
+    setTasksError(null)
+
+    try {
+      console.log("Fetching completed tasks...")
+
+      const response = await fetch("https://mailsync.l4it.net/api/completed_task", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${Cookies.get("authToken")}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("Fetch completed tasks API Error:", errorText)
+        throw new Error(`Failed to fetch completed tasks: ${response.status} - ${errorText}`)
+      }
+
+      const data = await response.json()
+      console.log("Fetch completed tasks response data:", data)
+
+      if (data.status && data.message && data.message.data) {
+        // The tasks are nested under message.data
+        setCompletedTasks(Array.isArray(data.message.data) ? data.message.data : [])
+      } else if (data.status && data.message) {
+        // Fallback for other response formats
+        setCompletedTasks(Array.isArray(data.message) ? data.message : [])
+      } else {
+        console.warn("Unexpected API response format:", data)
+        setCompletedTasks([])
+      }
+    } catch (err) {
+      console.error("Error fetching completed tasks:", err)
+      setTasksError(err instanceof Error ? err.message : "Failed to fetch completed tasks")
+      setCompletedTasks([])
+    } finally {
+      setIsLoadingCompleted(false)
+    }
+  }
+
   const addNewTask = async (data: TaskFormValues) => {
     setAddingTask(true)
     setTasksError(null)
@@ -508,13 +595,16 @@ const CalendarDashboard = memo(() => {
 
   const completeTask = async (taskId: string | number) => {
     try {
-      const response = await fetch("https://mailsync.l4it.net/api/completed_task", {
+      const formData = new FormData()
+      formData.append("task_id", taskId.toString())
+      formData.append("status", "completed")
+
+      const response = await fetch("https://mailsync.l4it.net/api/update_task", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${Cookies.get("AuthToken")}}`,
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("authToken")}`,
         },
-        body: JSON.stringify({ task_id: taskId }),
+        body: formData,
       })
 
       if (!response.ok) {
@@ -524,6 +614,11 @@ const CalendarDashboard = memo(() => {
       const data = await response.json()
       if (data.status) {
         fetchAllTasks() // Refresh tasks list
+        if (selectedTaskFilter === "Done") {
+          fetchCompletedTasks() // Also refresh completed tasks if we're on that filter
+        }
+      } else {
+        throw new Error(data.message || "Failed to complete task")
       }
     } catch (err) {
       console.error("Error completing task:", err)
@@ -576,7 +671,7 @@ const CalendarDashboard = memo(() => {
     return true
   })
 
-  const taskFilters = ["All", "To Do", "In Progress", "Done"]
+  const taskFilters = ["All","Done"]
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -605,30 +700,30 @@ const CalendarDashboard = memo(() => {
   }
 
   const getSentimentColor = (sentiment?: string) => {
-    switch (sentiment) {
-      case "Positive":
+    if (!sentiment) {
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+    }
+
+    const lowerSentiment = sentiment.toLowerCase()
+    switch (lowerSentiment) {
       case "positive":
         return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-      case "Negative":
       case "negative":
         return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-      case "Neutral":
       case "neutral":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
     }
   }
 
   const sentimentEmoji = (sentiment?: string) => {
-    switch (sentiment) {
-      case "Positive":
+    if (!sentiment) return ""
+    const lowerSentiment = sentiment.toLowerCase()
+    switch (lowerSentiment) {
       case "positive":
         return "😊"
-      case "Negative":
       case "negative":
         return "😞"
-      case "Neutral":
       case "neutral":
         return "😐"
       default:
@@ -748,20 +843,6 @@ const CalendarDashboard = memo(() => {
       reset()
       setShowAddTaskModal(false)
     }
-
-    // Handle escape key press
-    // useEffect(() => {
-    //   const handleEscapeKey = (e: KeyboardEvent) => {
-    //     if (e.key === "Escape") {
-    //       handleClose()
-    //     }
-    //   }
-
-    //   document.addEventListener("keydown", handleEscapeKey)
-    //   return () => {
-    //     document.removeEventListener("keydown", handleEscapeKey)
-    //   }
-    // }, [])
 
     return (
       <div
@@ -943,6 +1024,52 @@ const CalendarDashboard = memo(() => {
   AddTaskModal.displayName = "AddTaskModal"
 
   const TaskDetailModal = memo(({ task }: { task: any }) => {
+    const [isCompleting, setIsCompleting] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    const handleCompleteTask = async () => {
+      setIsCompleting(true)
+      setError(null)
+
+      try {
+        const formData = new FormData()
+        formData.append("task_id", task.id.toString())
+        formData.append("status", "completed")
+
+        const response = await fetch("https://mailsync.l4it.net/api/update_task", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${Cookies.get("authToken")}`,
+          },
+          body: formData,
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to complete task: ${response.status}`)
+        }
+
+        const data = await response.json()
+        if (data.status) {
+          // Update the task locally
+          task.task_completed = "1"
+          // Refresh task lists
+          fetchAllTasks()
+          if (selectedTaskFilter === "Done") {
+            fetchCompletedTasks()
+          }
+          // Close the modal
+          setSelectedMeeting(null)
+        } else {
+          throw new Error(data.message || "Failed to complete task")
+        }
+      } catch (err) {
+        console.error("Error completing task:", err)
+        setError(err instanceof Error ? err.message : "Failed to complete task")
+      } finally {
+        setIsCompleting(false)
+      }
+    }
+
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto relative z-10">
@@ -983,10 +1110,42 @@ const CalendarDashboard = memo(() => {
                     href={task.action_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center"
                   >
                     View Link <ExternalLink className="inline-block w-4 h-4 ml-1" />
                   </a>
+                </div>
+              )}
+
+              {error && (
+                <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
+
+              {/* Only show complete button if task isn't already completed */}
+              {task.task_completed !== "1" ? (
+                <Button
+                  onClick={handleCompleteTask}
+                  disabled={isCompleting}
+                  className="w-full bg-green-500 hover:bg-green-600"
+                >
+                  {isCompleting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Marking as Completed...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Mark as Completed
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <div className="flex items-center justify-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                  <span className="text-green-700 dark:text-green-400">Task Completed</span>
                 </div>
               )}
             </div>
@@ -1069,7 +1228,6 @@ const CalendarDashboard = memo(() => {
                   </h1>
                   <p className="text-slate-600 dark:text-slate-400">{"Today's meetings and events"}</p>
                 </div>
-               
               </div>
 
               {/* Today's Meetings */}
@@ -1085,7 +1243,6 @@ const CalendarDashboard = memo(() => {
                         <CalendarIcon className="w-5 h-5 text-blue-600" />
                         <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Scheduled Meetings</h2>
                       </div>
-   
                     </div>
                     {meetings.length === 0 ? (
                       <div className="text-center py-8 text-slate-500">
@@ -1217,7 +1374,12 @@ const CalendarDashboard = memo(() => {
                     key={filter}
                     variant={selectedTaskFilter === filter ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setSelectedTaskFilter(filter)}
+                    onClick={() => {
+                      setSelectedTaskFilter(filter)
+                      if (filter === "Done") {
+                        fetchCompletedTasks()
+                      }
+                    }}
                     className={`whitespace-nowrap transition-all duration-300 hover:scale-105 transform ${
                       selectedTaskFilter === filter
                         ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
@@ -1280,19 +1442,42 @@ const CalendarDashboard = memo(() => {
               </div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {realTasks
-                  .filter((task) => {
-                    if (selectedTaskFilter === "All") return true
-                    return task.status === selectedTaskFilter
-                  })
-                  .map((task) => (
-                    <RealTaskCard
-                      key={task.id}
-                      task={task}
-                      onComplete={() => completeTask(task.id)}
-                      onClick={() => setSelectedMeeting(task)}
-                    />
-                  ))}
+                {selectedTaskFilter === "Done" ? (
+                  isLoadingCompleted ? (
+                    <div className="col-span-full flex justify-center items-center h-64">
+                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+                    </div>
+                  ) : completedTasks.length === 0 ? (
+                    <div className="col-span-full text-center py-8 text-slate-500">
+                      <CheckCircle className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+                      <h3 className="text-lg font-medium mb-2">No completed tasks</h3>
+                      <p>Complete a task to see it here.</p>
+                    </div>
+                  ) : (
+                    completedTasks.map((task) => (
+                      <RealTaskCard
+                        key={task.id}
+                        task={{ ...task, task_completed: "1" }}
+                        onComplete={() => {}}
+                        onClick={() => setSelectedMeeting(task)}
+                      />
+                    ))
+                  )
+                ) : (
+                  realTasks
+                    .filter((task) => {
+                      if (selectedTaskFilter === "All") return true
+                      return task.status === selectedTaskFilter
+                    })
+                    .map((task) => (
+                      <RealTaskCard
+                        key={task.id}
+                        task={task}
+                        onComplete={() => completeTask(task.id)}
+                        onClick={() => setSelectedMeeting(task)}
+                      />
+                    ))
+                )}
               </div>
             )}
           </div>

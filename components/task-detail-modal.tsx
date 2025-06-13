@@ -3,15 +3,12 @@
 import {
   X,
   CheckCircle,
-  Star,
   Edit,
-  Trash2,
-  Share,
-  Copy,
   MessageSquare,
   Paperclip,
   Loader2,
   Combine,
+  PlusCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -30,6 +27,7 @@ interface TaskDetailModalProps {
 }
 
 const SMART_REPLY_API_URL = "https://mailsync.l4it.net/api/smart_reply"
+const MAIL_TO_TASK_API_URL = "https://mailsync.l4it.net/api/mailtotask"
 
 export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps) {
   const [emailResponse, setEmailResponse] = useState("")
@@ -39,7 +37,8 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
   const [selectedOptionIndices, setSelectedOptionIndices] = useState<number[]>([])
   const [isEditing, setIsEditing] = useState(false)
   const [draftResponse, setDraftResponse] = useState("")
-  const [isSending, setIsSending] = useState(false);
+  const [isSending, setIsSending] = useState(false)
+  const [isAddingToTask, setIsAddingToTask] = useState(false)
 
   // Reset all reply-related state when modal closes or task changes
   useEffect(() => {
@@ -69,7 +68,44 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
     return Cookies.get('authToken') || ''
   }
 
-   const handleSmartAIReply = async () => {
+  const handleAddToTask = async () => {
+    if (!task?.graphId) {
+      toast.error("No graph ID available for this task")
+      return
+    }
+
+    const authToken = getAuthToken()
+    if (!authToken) {
+      toast.error("Authentication token not found")
+      return
+    }
+
+    setIsAddingToTask(true)
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const response = await axios.post(
+        MAIL_TO_TASK_API_URL,
+        { graph_id: task.graphId },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      )
+
+
+      toast.success("Email successfully added to task!")
+    } catch (error) {
+      console.error("Error adding to task:", error)
+      toast.error("Failed to add email to task")
+    } finally {
+      setIsAddingToTask(false)
+    }
+  }
+
+  const handleSmartAIReply = async () => {
     const authToken = getAuthToken()
     if (!authToken) {
       setSmartReplyError("Authentication token not found")
@@ -121,54 +157,54 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
   }
 
   const handleSendReply = async () => {
-  if (!emailResponse || isSending) {
-    toast.error("Please write or generate a reply before sending");
-    return;
-  }
+    if (!emailResponse || isSending) {
+      toast.error("Please write or generate a reply before sending");
+      return;
+    }
 
-  if (!task?.graphId) {
-    toast.error("No graph ID available for this task");
-    return;
-  }
+    if (!task?.graphId) {
+      toast.error("No graph ID available for this task");
+      return;
+    }
 
-  const authToken = getAuthToken();
-  if (!authToken) {
-    toast.error("Authentication token not found");
-    return;
-  }
+    const authToken = getAuthToken();
+    if (!authToken) {
+      toast.error("Authentication token not found");
+      return;
+    }
 
-  setIsSending(true); // Set sending state to true
+    setIsSending(true);
 
-  try {
-    const formData = new FormData();
-    formData.append("graph_id", task.graphId);
-    formData.append("reply_message", htmlToEditableText(emailResponse));
+    try {
+      const formData = new FormData();
+      formData.append("graph_id", task.graphId);
+      formData.append("reply_message", htmlToEditableText(emailResponse));
 
-    await toast.promise(
-      axios.post("https://mailsync.l4it.net/api/reply", formData, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      }),
-      {
-        loading: "Sending reply...",
-        success: () => {
-          handleClose();
-          return "Reply sent successfully!";
-        },
-        error: (error) => {
-          console.error("Error sending reply:", error);
-          return error.response?.data?.message || "Failed to send reply";
-        },
-      }
-    );
-  } catch (err) {
-    console.error("Error in send reply:", err);
-    toast.error("An unexpected error occurred");
-  } finally {
-    setIsSending(false); // Reset sending state
-  }
-};
+      await toast.promise(
+        axios.post("https://mailsync.l4it.net/api/reply", formData, {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }),
+        {
+          loading: "Sending reply...",
+          success: () => {
+            handleClose();
+            return "Reply sent successfully!";
+          },
+          error: (error) => {
+            console.error("Error sending reply:", error);
+            return error.response?.data?.message || "Failed to send reply";
+          },
+        }
+      );
+    } catch (err) {
+      console.error("Error in send reply:", err);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const htmlToEditableText = (html: string) => {
     if (!html) return '';
@@ -283,16 +319,19 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              {[Star, Share, Copy, Edit, Trash2].map((Icon, i) => (
-                <Button
-                  key={i}
-                  variant="ghost"
-                  size="icon"
-                  className="w-8 h-8 rounded-lg hover:scale-110 transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                >
-                  <Icon className="w-4 h-4 text-slate-400" />
-                </Button>
-              ))}
+              <Button
+                variant="ghost"
+                className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50"
+                onClick={handleAddToTask}
+                disabled={isAddingToTask}
+              >
+                {isAddingToTask ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <PlusCircle className="w-3 h-3" />
+                )}
+                Add to Task
+              </Button>
               <Separator orientation="vertical" className="h-6 mx-1" />
               <Button
                 variant="ghost"
@@ -485,22 +524,21 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
         <div className="border-t border-slate-200/50 dark:border-slate-700/50 p-3 sm:p-4 bg-gradient-to-r from-slate-50/80 to-white/80 dark:from-slate-900/80 dark:to-slate-800/80 backdrop-blur-sm shrink-0">
           <div className="flex flex-wrap gap-1 sm:gap-2 items-center justify-between">
             <div className="flex flex-wrap gap-1 sm:gap-2">
-
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              className="text-xs px-3 py-1 sm:px-4 sm:py-2 rounded-lg border h-8"
-            >
-              Close
-            </Button>
-            </div>
-                       <Button 
-                className="text-xs px-3 py-1 sm:px-4 sm:py-2 rounded-lg h-8 cursor-pointer"
-                onClick={handleSendReply}
-                disabled={!emailResponse}
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                className="text-xs px-3 py-1 sm:px-4 sm:py-2 rounded-lg border h-8"
               >
-                Send
+                Close
               </Button>
+            </div>
+            <Button 
+              className="text-xs px-3 py-1 sm:px-4 sm:py-2 rounded-lg h-8 cursor-pointer"
+              onClick={handleSendReply}
+              disabled={!emailResponse}
+            >
+              Send
+            </Button>
           </div>
         </div>
       </div>
