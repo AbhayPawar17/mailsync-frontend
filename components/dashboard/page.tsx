@@ -14,7 +14,6 @@ import {
   Circle,
   ExternalLink,
   AlertCircle,
-  Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -1023,137 +1022,99 @@ const CalendarDashboard = memo(() => {
 
   AddTaskModal.displayName = "AddTaskModal"
 
-  const TaskDetailModal = memo(({ task }: { task: any }) => {
-    const [isCompleting, setIsCompleting] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+const TaskDetailModal = memo(({ task }: { task: any }) => {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto relative z-10">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{task.title}</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedMeeting(null)}
+              className="text-slate-500 hover:text-slate-700"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
 
-    const handleCompleteTask = async () => {
-      setIsCompleting(true)
-      setError(null)
+          <div className="space-y-4">
+            {task.description && task.description !== "NA" && (
+              <div>
+                <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Description</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{task.description}</p>
+              </div>
+            )}
 
-      try {
-        const formData = new FormData()
-        formData.append("task_id", task.id.toString())
-        formData.append("status", "completed")
+            {task.due_at && task.due_at !== "NA" && (
+              <div>
+                <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Meeting Time</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  {new Date(task.due_at).toLocaleString([], {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+              </div>
+            )}
 
-        const response = await fetch("https://mailsync.l4it.net/api/update_task", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${Cookies.get("authToken")}`,
-          },
-          body: formData,
-        })
-
-        if (!response.ok) {
-          throw new Error(`Failed to complete task: ${response.status}`)
-        }
-
-        const data = await response.json()
-        if (data.status) {
-          // Update the task locally
-          task.task_completed = "1"
-          // Refresh task lists
-          fetchAllTasks()
-          if (selectedTaskFilter === "Done") {
-            fetchCompletedTasks()
-          }
-          // Close the modal
-          setSelectedMeeting(null)
-        } else {
-          throw new Error(data.message || "Failed to complete task")
-        }
-      } catch (err) {
-        console.error("Error completing task:", err)
-        setError(err instanceof Error ? err.message : "Failed to complete task")
-      } finally {
-        setIsCompleting(false)
-      }
-    }
-
-    return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto relative z-10">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{task.title}</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedMeeting(null)}
-                className="text-slate-500 hover:text-slate-700"
-              >
-                <X className="w-5 h-5" />
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              {task.description && task.description !== "NA" && (
-                <div>
-                  <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Description</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">{task.description}</p>
+            {task.actionLink && task.actionLink !== "NA" && (
+              <div>
+                <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Meeting Link</h3>
+                <div className="mt-2">
+                  {/* Extract the second URL from the comma-separated string */}
+                  {(() => {
+                    const urls = task.actionLink.split(',').map((url: string) => url.trim());
+                    const teamsUrl = urls.length > 1 ? urls[1] : urls[0];
+                    
+                    return (
+                      <a
+                        href={teamsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Join Teams Meeting
+                      </a>
+                    );
+                  })()}
+                  
+                  <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 break-all">
+                    {/* Display both URLs with labels */}
+                    <div className="mb-1">
+                      <span className="font-medium">General Link:</span> {task.actionLink.split(',')[0].trim()}
+                    </div>
+                    {task.actionLink.includes(',') && (
+                      <div>
+                        <span className="font-medium">Teams Link:</span> {task.actionLink.split(',')[1].trim()}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+              </div>
+            )}
 
-              {task.due_at && task.due_at !== "NA" && (
-                <div>
-                  <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Due Date</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    {new Date(task.due_at).toLocaleDateString()}
-                  </p>
-                </div>
-              )}
+            {task.from_name && (
+              <div>
+                <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Organizer</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  {task.from_name} {task.from_email && `(${task.from_email})`}
+                </p>
+              </div>
+            )}
 
-              {task.action_link && task.action_link !== "NA" && (
-                <div>
-                  <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Action Link</h3>
-                  <a
-                    href={task.action_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center"
-                  >
-                    View Link <ExternalLink className="inline-block w-4 h-4 ml-1" />
-                  </a>
-                </div>
-              )}
-
-              {error && (
-                <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 text-sm">
-                  {error}
-                </div>
-              )}
-
-              {/* Only show complete button if task isn't already completed */}
-              {task.task_completed !== "1" ? (
-                <Button
-                  onClick={handleCompleteTask}
-                  disabled={isCompleting}
-                  className="w-full bg-green-500 hover:bg-green-600"
-                >
-                  {isCompleting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Marking as Completed...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Mark as Completed
-                    </>
-                  )}
-                </Button>
-              ) : (
-                <div className="flex items-center justify-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span className="text-green-700 dark:text-green-400">Task Completed</span>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
-    )
-  })
+    </div>
+  )
+})
 
   TaskDetailModal.displayName = "TaskDetailModal"
 
