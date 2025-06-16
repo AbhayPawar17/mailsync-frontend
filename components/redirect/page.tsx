@@ -20,7 +20,6 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
   const [progress, setProgress] = useState<number>(0)
   const [currentStep, setCurrentStep] = useState<number>(0)
   const [isApiCalled, setIsApiCalled] = useState(false)
-  const [isComplete, setIsComplete] = useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
   
@@ -65,79 +64,71 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
       })
     }
 
-    const startProgressSequence = async () => {
-      // Start progress tracking
+    const progressSequence = async () => {
+      await progressControls.start({
+        width: "100%",
+        transition: { duration: 8, ease: "linear" },
+      })
+
+      // Make API call only once
+      if (!isApiCalled) {
+        setIsApiCalled(true)
+        try {
+          const response = await fetch(`${BASE_URI}/update_mail`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const result = await response.json();
+
+          if (result.status) {
+            setTimeout(() => {
+              router.push("/dashboard");
+            }, 500);
+          } else {
+            // Handle API error
+            setTimeout(() => {
+              router.push("/dashboard");
+            }, 500);
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          // Fallback redirect if API fails
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 500);
+        }
+      }
+    }
+
+    const startProgressTracking = () => {
       progressIntervalRef.current = setInterval(() => {
         setProgress((prev) => {
-          const newProgress = prev + 0.8 // Slower progress increment
+          const newProgress = prev + 1.5
 
           // Update current step based on progress
-          if (newProgress >= 20 && currentStep < 1) setCurrentStep(1)
-          if (newProgress >= 40 && currentStep < 2) setCurrentStep(2)
-          
-          // Stop at 70% until API call is complete
-          if (newProgress >= 70 && !isApiCalled) {
-            // Make API call when reaching 70%
-            setIsApiCalled(true)
-            makeApiCall()
-            return 70
-          }
+          if (newProgress >= 25 && currentStep < 1) setCurrentStep(1)
+          if (newProgress >= 50 && currentStep < 2) setCurrentStep(2)
+          if (newProgress >= 85 && currentStep < 3) setCurrentStep(3)
 
-          // Continue to 100% only after API call is complete
-          if (newProgress >= 100 && isComplete) {
+          if (newProgress >= 100) {
             if (progressIntervalRef.current) {
               clearInterval(progressIntervalRef.current)
               progressIntervalRef.current = null
             }
-            setCurrentStep(3) // Set to complete step
-            
-            // Redirect after a short delay
-            setTimeout(() => {
-              router.push("/dashboard")
-            }, 1000)
-            
             return 100
           }
-
           return newProgress
         })
-      }, 100) // Slower interval for more controlled progress
-    }
-
-    const makeApiCall = async () => {
-      try {
-        const response = await fetch(`${BASE_URI}/update_mail`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const result = await response.json();
-
-        // Simulate minimum loading time for better UX
-        await new Promise(resolve => setTimeout(resolve, 1500))
-
-        if (result.status) {
-          setIsComplete(true)
-          setCurrentStep(2) // Move to finalizing step
-        } else {
-          // Handle API error but still complete
-          setIsComplete(true)
-          setCurrentStep(2)
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        // Handle error but still complete
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        setIsComplete(true)
-        setCurrentStep(2)
-      }
+      }, 80)
     }
 
     sequence()
-    startProgressSequence()
+    progressSequence()
+    startProgressTracking()
 
     // Cleanup function
     return () => {
@@ -150,13 +141,13 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
     }
     }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Update progress bar width based on actual progress
+
+  // Handle progress-based step updates
   useEffect(() => {
-    progressControls.start({
-      width: `${progress}%`,
-      transition: { duration: 0.3, ease: "easeOut" },
-    })
-  }, [progress, progressControls])
+    if (progress >= 25 && currentStep < 1) setCurrentStep(1)
+    if (progress >= 50 && currentStep < 2) setCurrentStep(2)
+    if (progress >= 85 && currentStep < 3) setCurrentStep(3)
+  }, [progress, currentStep])
 
   if (!token) {
     return (
