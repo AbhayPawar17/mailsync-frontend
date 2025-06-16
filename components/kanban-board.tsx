@@ -230,7 +230,7 @@ export function KanbanBoard() {
   return (
     <div className="flex-1 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
       {/* Header without z-index */}
-      <div className="relative p-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+      <div className="relative p-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-20">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           <div ref={searchContainerRef} className="relative w-full sm:w-auto sm:min-w-[320px]">
             <form onSubmit={handleSearch} className="relative">
@@ -262,7 +262,7 @@ export function KanbanBoard() {
 
             {/* Dropdown with high z-index */}
             {showSuggestions && !isSearching && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-[9999] max-h-80 overflow-y-auto backdrop-blur-sm">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto backdrop-blur-sm">
                 {recentSearches.length > 0 && (
                   <div className="p-2 border-b border-slate-100 dark:border-slate-700">
                     <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 px-2">Recent Searches</h4>
@@ -346,7 +346,7 @@ export function KanbanBoard() {
       </div>
 
       {/* Kanban Board */}
-      <div className="pt-6 pr-6 pb-6 pl-2 overflow-auto h-full">
+      <div className="pt-6 pr-6 pb-6 pl-2 overflow-auto h-full z-10">
         {taskColumns.length > 0 ? (
           <div className="flex space-x-2 min-w-max pb-8">
             {taskColumns.map((column) => (
