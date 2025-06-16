@@ -107,7 +107,7 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
     const startProgressTracking = () => {
       progressIntervalRef.current = setInterval(() => {
         setProgress((prev) => {
-          const newProgress = prev + 1.5
+          const newProgress = prev + 1
 
           // Update current step based on progress
           if (newProgress >= 25 && currentStep < 1) setCurrentStep(1)
