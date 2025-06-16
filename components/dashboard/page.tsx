@@ -29,6 +29,8 @@ let globalAiSuggestions: { [key: string]: string[] } = {}
 let globalInitialized = false
 let globalAiInitialized = false
 
+const BASE_URI = process.env.NEXT_PUBLIC_BASE_URI;
+
 // Form type for React Hook Form
 type TaskFormValues = {
   title: string
@@ -271,7 +273,7 @@ const CalendarDashboard = memo(() => {
 
         console.log("Fetching tasks for the first time...")
 
-        const response = await fetch("https://mailsync.l4it.net/api/allmessages", {
+        const response = await fetch(`${BASE_URI}/allmessages`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${authToken}`,
@@ -376,7 +378,7 @@ const CalendarDashboard = memo(() => {
       try {
         console.log("Fetching AI suggestions for the first time...")
 
-        const response = await fetch("https://mailsync.l4it.net/api/full_suggestion", {
+        const response = await fetch(`${BASE_URI}/full_suggestion`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${Cookies.get("authToken")}`,
@@ -461,7 +463,7 @@ const CalendarDashboard = memo(() => {
     try {
       console.log("Fetching all tasks...")
 
-      const response = await fetch("https://mailsync.l4it.net/api/all_task", {
+      const response = await fetch(`${BASE_URI}/all_task`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${Cookies.get("authToken")}`,
@@ -504,7 +506,7 @@ const CalendarDashboard = memo(() => {
     try {
       console.log("Fetching completed tasks...")
 
-      const response = await fetch("https://mailsync.l4it.net/api/completed_task", {
+      const response = await fetch(`${BASE_URI}/completed_task`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${Cookies.get("authToken")}`,
@@ -559,7 +561,7 @@ const CalendarDashboard = memo(() => {
 
       console.log("Adding task:", data)
 
-      const response = await fetch("https://mailsync.l4it.net/api/add_task", {
+      const response = await fetch(`${BASE_URI}/add_task`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${Cookies.get("authToken")}`,
@@ -598,7 +600,7 @@ const CalendarDashboard = memo(() => {
       formData.append("task_id", taskId.toString())
       formData.append("status", "completed")
 
-      const response = await fetch("https://mailsync.l4it.net/api/update_task", {
+      const response = await fetch(`${BASE_URI}/update_task`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${Cookies.get("authToken")}`,

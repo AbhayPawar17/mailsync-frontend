@@ -2,7 +2,7 @@
 
 import { motion, useAnimation } from "framer-motion"
 import { useSearchParams, useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Cookies from "js-cookie"
 import { Mail, CheckCircle, Sparkles, Zap, Shield } from "lucide-react"
 import Customloader from "../custom-loader/customloader"
@@ -11,14 +11,21 @@ interface RedirectComponentProps {
   provider?: string
 }
 
+const BASE_URI = process.env.NEXT_PUBLIC_BASE_URI;
+
 export default function RedirectComponent({ provider }: RedirectComponentProps) {
   const controls = useAnimation()
   const progressControls = useAnimation()
   const [token, setToken] = useState<string>("")
   const [progress, setProgress] = useState<number>(0)
   const [currentStep, setCurrentStep] = useState<number>(0)
+  const [isApiCalled, setIsApiCalled] = useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
+  
+  // Use refs to prevent multiple API calls
+  const apiCallRef = useRef(false)
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const steps = [
     { icon: Shield, text: "Authenticating...", color: "from-blue-500 to-cyan-500" },
@@ -27,6 +34,7 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
     { icon: CheckCircle, text: "Complete!", color: "from-emerald-500 to-teal-500" },
   ]
 
+  // Handle token extraction - separate useEffect
   useEffect(() => {
     const tokenFromURL = searchParams.get("token")
     if (tokenFromURL) {
@@ -40,9 +48,14 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
     } else {
       console.log("Token missing")
     }
-  }, [searchParams, router])
+  }, [searchParams])
 
+  // Handle animations and API call - separate useEffect that runs only once when token is available
   useEffect(() => {
+    if (!token || apiCallRef.current) return
+
+    apiCallRef.current = true
+
     const sequence = async () => {
       await controls.start({
         scale: [1, 1.05, 1],
@@ -51,64 +64,90 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
       })
     }
 
-   const progressSequence = async () => {
-  await progressControls.start({
-    width: "100%",
-    transition: { duration: 4, ease: "easeInOut" },
-  })
-
-  // Add your API call here
-  try {
-    const response = await fetch('http://mailsync.l4it.net/api/update_mail', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    const result = await response.json();
-
-    if (result.status) {
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 500);
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    // Fallback redirect if API fails
-    setTimeout(() => {
-      router.push("/dashboard");
-    }, 500);
-  }
-}
-
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        const newProgress = prev + 1.5
-
-        // Update current step based on progress
-        if (newProgress >= 25 && currentStep < 1) setCurrentStep(1)
-        if (newProgress >= 50 && currentStep < 2) setCurrentStep(2)
-        if (newProgress >= 85 && currentStep < 3) setCurrentStep(3)
-
-        if (newProgress >= 100) {
-          clearInterval(progressInterval)
-          return 100
-        }
-        return newProgress
+    const progressSequence = async () => {
+      await progressControls.start({
+        width: "100%",
+        transition: { duration: 4, ease: "easeInOut" },
       })
-    }, 80)
+
+      // Make API call only once
+      if (!isApiCalled) {
+        setIsApiCalled(true)
+        try {
+          const response = await fetch(`${BASE_URI}/update_mail`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const result = await response.json();
+
+          if (result.status) {
+            setTimeout(() => {
+              router.push("/dashboard");
+            }, 500);
+          } else {
+            // Handle API error
+            setTimeout(() => {
+              router.push("/dashboard");
+            }, 500);
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          // Fallback redirect if API fails
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 500);
+        }
+      }
+    }
+
+    const startProgressTracking = () => {
+      progressIntervalRef.current = setInterval(() => {
+        setProgress((prev) => {
+          const newProgress = prev + 1.5
+
+          // Update current step based on progress
+          if (newProgress >= 25 && currentStep < 1) setCurrentStep(1)
+          if (newProgress >= 50 && currentStep < 2) setCurrentStep(2)
+          if (newProgress >= 85 && currentStep < 3) setCurrentStep(3)
+
+          if (newProgress >= 100) {
+            if (progressIntervalRef.current) {
+              clearInterval(progressIntervalRef.current)
+              progressIntervalRef.current = null
+            }
+            return 100
+          }
+          return newProgress
+        })
+      }, 80)
+    }
 
     sequence()
     progressSequence()
+    startProgressTracking()
 
+    // Cleanup function
     return () => {
       controls.stop()
       progressControls.stop()
-      clearInterval(progressInterval)
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current)
+        progressIntervalRef.current = null
+      }
     }
-  }, [controls, progressControls, router, currentStep,token])
+    }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
+
+
+  // Handle progress-based step updates
+  useEffect(() => {
+    if (progress >= 25 && currentStep < 1) setCurrentStep(1)
+    if (progress >= 50 && currentStep < 2) setCurrentStep(2)
+    if (progress >= 85 && currentStep < 3) setCurrentStep(3)
+  }, [progress, currentStep])
 
   if (!token) {
     return (
@@ -269,7 +308,6 @@ export default function RedirectComponent({ provider }: RedirectComponentProps) 
         {/* Enhanced progress section */}
         <div className="w-96 max-w-full mx-auto mb-8">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-sm text-purple-300/70">Progress</span>
             <motion.span
               key={Math.round(progress)}
               initial={{ scale: 1.2 }}

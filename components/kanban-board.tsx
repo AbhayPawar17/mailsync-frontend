@@ -2,14 +2,22 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
-import { RefreshCw, AlertCircle, Calendar, Search, X } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { RefreshCw, AlertCircle, Calendar, Search, X, Clock, Users, MessageSquare, Mail, Star, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { TaskColumn } from "./task-column"
 import { TaskDetailModal } from "./task-detail-modal"
 import { useTasks } from "@/hooks/use-tasks"
 import Customloader from "./custom-loader/customloader"
+
+interface SearchSuggestion {
+  id: string
+  label: string
+  icon: React.ReactNode
+  query: string
+  category: string
+}
 
 export function KanbanBoard() {
   const {
@@ -29,6 +37,71 @@ export function KanbanBoard() {
   const [showTaskDetail, setShowTaskDetail] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [localSearchQuery, setLocalSearchQuery] = useState("")
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [recentSearches, setRecentSearches] = useState<string[]>([])
+  
+  const searchContainerRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Search suggestions based on task data
+  const searchSuggestions: SearchSuggestion[] = [
+    {
+      id: "meetings",
+      label: "Search meetings",
+      icon: <Calendar className="w-4 h-4" />,
+      query: "meeting",
+      category: "Quick Search"
+    },
+    {
+      id: "chats",
+      label: "Search chats",
+      icon: <MessageSquare className="w-4 h-4" />,
+      query: "chat",
+      category: "Quick Search"
+    },
+    {
+      id: "emails",
+      label: "Search emails",
+      icon: <Mail className="w-4 h-4" />,
+      query: "email",
+      category: "Quick Search"
+    },
+    {
+      id: "high-priority",
+      label: "High priority tasks",
+      icon: <AlertCircle className="w-4 h-4" />,
+      query: "priority:High",
+      category: "Priority"
+    },
+    {
+      id: "critical",
+      label: "Critical tasks",
+      icon: <Star className="w-4 h-4" />,
+      query: "priority:Critical",
+      category: "Priority"
+    },
+    {
+      id: "today",
+      label: "Today's tasks",
+      icon: <Clock className="w-4 h-4" />,
+      query: "today",
+      category: "Time"
+    },
+    {
+      id: "team",
+      label: "Team tasks",
+      icon: <Users className="w-4 h-4" />,
+      query: "team",
+      category: "People"
+    },
+    {
+      id: "tagged",
+      label: "Tagged items",
+      icon: <Tag className="w-4 h-4" />,
+      query: "tag:",
+      category: "Organization"
+    }
+  ]
 
   // Enhanced task selection with better error handling
   const selectedTask = selectedTaskId ? tasks.find((task) => task.id === selectedTaskId) : null
@@ -63,15 +136,67 @@ export function KanbanBoard() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (localSearchQuery.trim()) {
+      // Add to recent searches
+      const updatedRecentSearches = [localSearchQuery, ...recentSearches.filter(s => s !== localSearchQuery)].slice(0, 5)
+      setRecentSearches(updatedRecentSearches)
+      localStorage.setItem('recentSearches', JSON.stringify(updatedRecentSearches))
+    }
     setSearchQuery(localSearchQuery)
+    setShowSuggestions(false) // Hide suggestions immediately
     await searchTasks(localSearchQuery)
+  }
+
+  const handleSuggestionClick = async (suggestion: SearchSuggestion) => {
+    setLocalSearchQuery(suggestion.query)
+    setSearchQuery(suggestion.query)
+    setShowSuggestions(false) // Hide suggestions immediately
+    await searchTasks(suggestion.query)
+    
+    // Add to recent searches
+    const updatedRecentSearches = [suggestion.query, ...recentSearches.filter(s => s !== suggestion.query)].slice(0, 5)
+    setRecentSearches(updatedRecentSearches)
+    localStorage.setItem('recentSearches', JSON.stringify(updatedRecentSearches))
+  }
+
+  const handleRecentSearchClick = async (query: string) => {
+    setLocalSearchQuery(query)
+    setSearchQuery(query)
+    setShowSuggestions(false) // Hide suggestions immediately
+    await searchTasks(query)
   }
 
   const clearSearch = async () => {
     setLocalSearchQuery("")
     setSearchQuery("")
+    setShowSuggestions(false)
     await refreshTasks()
   }
+
+  const handleInputFocus = () => {
+    setShowSuggestions(true)
+  }
+
+  const handleInputBlur = (e: React.FocusEvent) => {
+    // Delay hiding suggestions to allow clicks on suggestions
+    setTimeout(() => {
+      if (!searchContainerRef.current?.contains(e.relatedTarget as Node)) {
+        setShowSuggestions(false)
+      }
+    }, 200)
+  }
+
+  // Load recent searches from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('recentSearches')
+    if (stored) {
+      try {
+        setRecentSearches(JSON.parse(stored))
+      } catch (e) {
+        console.error('Error loading recent searches:', e)
+      }
+    }
+  }, [])
 
   // Update local search query when the global one changes
   useEffect(() => {
@@ -86,6 +211,18 @@ export function KanbanBoard() {
       console.log("Tasks with graph_id:", tasks.filter(t => t.graphId).length)
     }
   }, [tasks])
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   if (loading) {
     return (
@@ -120,29 +257,75 @@ export function KanbanBoard() {
   return (
     <div className="flex-1 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
       {/* Header with Search, Stats and Refresh Button */}
-      <div className="p-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+      <div className="relative p-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-[100]">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-          {/* Search Form */}
-          <form onSubmit={handleSearch} className="relative w-full sm:w-auto sm:min-w-[240px]">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-            <Input
-              placeholder="Search emails..."
-              value={localSearchQuery}
-              onChange={(e) => setLocalSearchQuery(e.target.value)}
-              className="w-96 pl-10 pr-10 bg-white/60 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 h-10"
-              disabled={isSearching}
-            />
+          {/* Enhanced Search Form with Suggestions */}
+          <div ref={searchContainerRef} className="relative w-full sm:w-auto sm:min-w-[320px]">
+            <form onSubmit={handleSearch} className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4 z-10" />
+              <Input
+                ref={inputRef}
+                placeholder="Search tasks, meetings, chats..."
+                value={localSearchQuery}
+                onChange={(e) => setLocalSearchQuery(e.target.value)}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
+                className="w-full pl-10 pr-10 bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 h-11 rounded-lg shadow-sm focus:shadow-md focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 dark:focus:border-blue-500 transition-all duration-200"
+                disabled={isSearching}
+              />
 
-            {localSearchQuery && (
-              <button
-                type="button"
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              {isSearching ? (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 z-10">
+                  <RefreshCw className="w-4 h-4 text-slate-400 animate-spin" />
+                </div>
+              ) : localSearchQuery ? (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors z-10"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              ) : null}
+            </form>
+
+            {/* Search Suggestions Dropdown */}
+            {showSuggestions && !isSearching && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-[9999] max-h-80 overflow-y-auto backdrop-blur-sm">
+                {/* Recent Searches */}
+                {recentSearches.length > 0 && (
+                  <div className="p-2 border-b border-slate-100 dark:border-slate-700">
+                    <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 px-2">Recent Searches</h4>
+                    {recentSearches.map((query, index) => (
+                      <button
+                        key={`recent-${index}`}
+                        onClick={() => handleRecentSearchClick(query)}
+                        className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-md transition-colors flex items-center gap-2"
+                      >
+                        <Clock className="w-3 h-3 text-slate-400" />
+                        {query}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Search Suggestions */}
+                <div className="p-2">
+                  <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 px-2">Quick Search</h4>
+                  {searchSuggestions.map((suggestion) => (
+                    <button
+                      key={suggestion.id}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-md transition-colors flex items-center gap-3"
+                    >
+                      <span className="text-slate-400">{suggestion.icon}</span>
+                      <span>{suggestion.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
-          </form>
+          </div>
 
           <div className="flex items-center gap-3">
             {/* Stats Cards */}
@@ -194,23 +377,10 @@ export function KanbanBoard() {
             </Button>
           </div>
         </div>
-
-        {/* Search Results Indicator */}
-        {/* {searchQuery && (
-          <div className="mt-3 flex items-center justify-between"> */}
-            {/* <p className="text-sm text-slate-600 dark:text-slate-400">
-              Search results for:{" "}
-              <span className="font-medium text-indigo-600 dark:text-indigo-400">{searchQuery}</span>
-            </p> */}
-            {/* <Button variant="link" size="sm" onClick={clearSearch} className="text-indigo-600 dark:text-indigo-400 p-0">
-              Clear search
-            </Button> */}
-          {/* </div>
-        )} */}
       </div>
 
       {/* Kanban Board */}
-      <div className="pt-6 pr-6 pb-6 pl-2 overflow-auto h-full">
+      <div className="pt-6 pr-6 pb-6 pl-2 overflow-auto h-full relative z-[1]">
         {taskColumns.length > 0 ? (
           <div className="flex space-x-2 min-w-max pb-8">
             {taskColumns.map((column) => (

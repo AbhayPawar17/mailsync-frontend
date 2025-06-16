@@ -24,6 +24,8 @@ interface ApiResponse {
   }
 }
 
+const BASE_URI = process.env.NEXT_PUBLIC_BASE_URI
+
 export function useMetricsApi() {
   const [metricsData, setMetricsData] = useState<MetricCardData[]>([])
   const [loading, setLoading] = useState(true)
@@ -39,7 +41,7 @@ export function useMetricsApi() {
       }
 
       const response = await axios.post<ApiResponse>(
-        "https://mailsync.l4it.net/api/insight", {},
+        `${BASE_URI}/insight`, {},
         {
           headers: {
             Authorization: `Bearer ${authToken}`,

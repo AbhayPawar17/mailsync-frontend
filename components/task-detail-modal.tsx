@@ -26,8 +26,9 @@ interface TaskDetailModalProps {
   onClose: () => void
 }
 
-const SMART_REPLY_API_URL = "https://mailsync.l4it.net/api/smart_reply"
-const MAIL_TO_TASK_API_URL = "https://mailsync.l4it.net/api/mailtotask"
+const BASE_URI = process.env.NEXT_PUBLIC_BASE_URI;
+const SMART_REPLY_API_URL = `${BASE_URI}/smart_reply`;
+const MAIL_TO_TASK_API_URL = `${BASE_URI}/mailtotask`;
 
 export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps) {
   const [emailResponse, setEmailResponse] = useState("")
@@ -181,7 +182,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
       formData.append("reply_message", htmlToEditableText(emailResponse));
 
       await toast.promise(
-        axios.post("https://mailsync.l4it.net/api/reply", formData, {
+        axios.post(`${BASE_URI}/reply`, formData, {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },

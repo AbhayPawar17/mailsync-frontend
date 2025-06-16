@@ -5,9 +5,11 @@ import axios from "axios"
 import Cookies from "js-cookie"
 import type { ApiResponse, ApiTask, Task, TaskColumn } from "@/types/task"
 
-const API_URL = "https://mailsync.l4it.net/api/allmessages"
-const UPDATE_API_URL = "https://mailsync.l4it.net/api/update_mail"
-const SEARCH_API_URL = "https://mailsync.l4it.net/api/search"
+const BASE_URI = process.env.NEXT_PUBLIC_BASE_URI
+
+const API_URL = `${BASE_URI}/allmessages`
+const UPDATE_API_URL = `${BASE_URI}/update_mail`
+const SEARCH_API_URL = `${BASE_URI}/search`
 
 // Global state to persist tasks across component re-renders
 let globalTasks: Task[] = []

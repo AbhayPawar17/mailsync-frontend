@@ -13,6 +13,8 @@ const fadeInAnimation = `
 }
 `
 
+const BASE_URI = process.env.NEXT_PUBLIC_BASE_URI
+
 interface ApiResponse {
   status: boolean
   data: {
@@ -70,7 +72,7 @@ const fetchInsightDataOnce = async (): Promise<ApiResponse> => {
       const authToken = Cookies.get("authToken")
       if (!authToken) throw new Error("No auth token found in cookies.")
 
-      const response = await fetch("https://mailsync.l4it.net/api/insight", {
+      const response = await fetch(`${BASE_URI}/insight`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${authToken}`,

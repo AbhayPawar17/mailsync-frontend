@@ -17,6 +17,8 @@ interface SidebarProps {
   setCurrentPage: (page: "dashboard" | "email" | "insights") => void
 }
 
+const BASE_URI = process.env.NEXT_PUBLIC_BASE_URI;
+
 export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, setCurrentPage }: SidebarProps) {
   const isMobile = useIsMobile()
   const router = useRouter()
@@ -44,7 +46,7 @@ export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, se
         return
       }
 
-      const response = await fetch('https://mailsync.l4it.net/api/logout', {
+      const response = await fetch(`${BASE_URI}/logout`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,

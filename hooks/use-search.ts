@@ -25,7 +25,7 @@ export interface SearchResponse {
   };
 }
 
-const API_BASE_URL = 'https://mailsync.l4it.net/api';
+const BASE_URI = process.env.NEXT_PUBLIC_BASE_URI
 
 export const searchMails = async (query: string): Promise<SearchResponse> => {
   // Get token from cookies - matches your auth implementation
@@ -37,7 +37,7 @@ export const searchMails = async (query: string): Promise<SearchResponse> => {
 
   try {
     const response = await axios.post<SearchResponse>(
-      `${API_BASE_URL}/search`,
+      `${BASE_URI}/search`,
       new URLSearchParams({ query }),
       {
         headers: {
