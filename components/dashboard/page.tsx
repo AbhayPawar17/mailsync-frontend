@@ -271,8 +271,6 @@ const CalendarDashboard = memo(() => {
       try {
         const authToken = Cookies.get("authToken")
 
-        console.log("Fetching tasks for the first time...")
-
         const response = await fetch(`${BASE_URI}/allmessages`, {
           method: "POST",
           headers: {
@@ -315,7 +313,6 @@ const CalendarDashboard = memo(() => {
           setLoading(false)
           setError(null)
 
-          console.log("Tasks fetched and cached globally")
         } else {
           throw new Error("Invalid API response format")
         }
@@ -376,7 +373,6 @@ const CalendarDashboard = memo(() => {
       setAiSuggestionsError(null)
 
       try {
-        console.log("Fetching AI suggestions for the first time...")
 
         const response = await fetch(`${BASE_URI}/full_suggestion`, {
           method: "POST",
@@ -417,7 +413,6 @@ const CalendarDashboard = memo(() => {
           // Update component state
           setAiSuggestions(categorizedSuggestions)
 
-          console.log("AI suggestions fetched and cached globally")
         } else {
           throw new Error("Invalid API response format")
         }
@@ -461,7 +456,6 @@ const CalendarDashboard = memo(() => {
     setTasksError(null)
 
     try {
-      console.log("Fetching all tasks...")
 
       const response = await fetch(`${BASE_URI}/all_task`, {
         method: "POST",
@@ -478,7 +472,6 @@ const CalendarDashboard = memo(() => {
       }
 
       const data = await response.json()
-      console.log("Fetch tasks response data:", data)
 
       if (data.status && data.message && data.message.data) {
         // The tasks are nested under message.data
@@ -504,7 +497,6 @@ const CalendarDashboard = memo(() => {
     setTasksError(null)
 
     try {
-      console.log("Fetching completed tasks...")
 
       const response = await fetch(`${BASE_URI}/completed_task`, {
         method: "POST",
@@ -521,7 +513,6 @@ const CalendarDashboard = memo(() => {
       }
 
       const data = await response.json()
-      console.log("Fetch completed tasks response data:", data)
 
       if (data.status && data.message && data.message.data) {
         // The tasks are nested under message.data
@@ -559,8 +550,6 @@ const CalendarDashboard = memo(() => {
         formData.append("action_link", data.action_link.trim())
       }
 
-      console.log("Adding task:", data)
-
       const response = await fetch(`${BASE_URI}/add_task`, {
         method: "POST",
         headers: {
@@ -569,8 +558,6 @@ const CalendarDashboard = memo(() => {
         body: formData,
       })
 
-      console.log("Response status:", response.status)
-
       if (!response.ok) {
         const errorText = await response.text()
         console.error("API Error:", errorText)
@@ -578,7 +565,6 @@ const CalendarDashboard = memo(() => {
       }
 
       const responseData = await response.json()
-      console.log("Response data:", responseData)
 
       if (responseData.status || responseData.success) {
         setShowAddTaskModal(false)

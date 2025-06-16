@@ -82,7 +82,6 @@ export const useTasks = () => {
 
       if (response.data.status && response.data.message) {
         const transformedTasks = response.data.message.map(transformApiTask)
-        console.log("Transformed tasks:", transformedTasks)
 
         // Log meetings specifically
         const meetings = transformedTasks.filter((task) => task.category === "Meeting")

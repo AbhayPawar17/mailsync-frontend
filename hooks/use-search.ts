@@ -46,7 +46,6 @@ export const searchMails = async (query: string): Promise<SearchResponse> => {
         }
       }
     );
-    console.log('Search response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error searching mails:', error);

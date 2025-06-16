@@ -107,7 +107,6 @@ export function KanbanBoard() {
   const selectedTask = selectedTaskId ? tasks.find((task) => task.id === selectedTaskId) : null
 
   const handleTaskClick = (taskId: string) => {
-    console.log("Task clicked:", taskId)
     const task = tasks.find((t) => t.id === taskId)
     if (task) {
       console.log("Selected task details:", {
