@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect, useRef } from "react"
 import { RefreshCw, AlertCircle, Calendar, Search, X, Clock, Users, MessageSquare, Mail, Star, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -43,7 +42,6 @@ export function KanbanBoard() {
   const searchContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Search suggestions based on task data
   const searchSuggestions: SearchSuggestion[] = [
     {
       id: "meetings",
@@ -103,22 +101,13 @@ export function KanbanBoard() {
     }
   ]
 
-  // Enhanced task selection with better error handling
   const selectedTask = selectedTaskId ? tasks.find((task) => task.id === selectedTaskId) : null
 
   const handleTaskClick = (taskId: string) => {
     const task = tasks.find((t) => t.id === taskId)
     if (task) {
-      console.log("Selected task details:", {
-        id: task.id,
-        title: task.title,
-        graphId: task.graphId,
-        hasGraphId: !!task.graphId
-      })
       setSelectedTaskId(taskId)
       setShowTaskDetail(true)
-    } else {
-      console.error("Task not found:", taskId)
     }
   }
 
@@ -136,23 +125,21 @@ export function KanbanBoard() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     if (localSearchQuery.trim()) {
-      // Add to recent searches
       const updatedRecentSearches = [localSearchQuery, ...recentSearches.filter(s => s !== localSearchQuery)].slice(0, 5)
       setRecentSearches(updatedRecentSearches)
       localStorage.setItem('recentSearches', JSON.stringify(updatedRecentSearches))
     }
     setSearchQuery(localSearchQuery)
-    setShowSuggestions(false) // Hide suggestions immediately
+    setShowSuggestions(false)
     await searchTasks(localSearchQuery)
   }
 
   const handleSuggestionClick = async (suggestion: SearchSuggestion) => {
     setLocalSearchQuery(suggestion.query)
     setSearchQuery(suggestion.query)
-    setShowSuggestions(false) // Hide suggestions immediately
+    setShowSuggestions(false)
     await searchTasks(suggestion.query)
     
-    // Add to recent searches
     const updatedRecentSearches = [suggestion.query, ...recentSearches.filter(s => s !== suggestion.query)].slice(0, 5)
     setRecentSearches(updatedRecentSearches)
     localStorage.setItem('recentSearches', JSON.stringify(updatedRecentSearches))
@@ -161,7 +148,7 @@ export function KanbanBoard() {
   const handleRecentSearchClick = async (query: string) => {
     setLocalSearchQuery(query)
     setSearchQuery(query)
-    setShowSuggestions(false) // Hide suggestions immediately
+    setShowSuggestions(false)
     await searchTasks(query)
   }
 
@@ -177,7 +164,6 @@ export function KanbanBoard() {
   }
 
   const handleInputBlur = (e: React.FocusEvent) => {
-    // Delay hiding suggestions to allow clicks on suggestions
     setTimeout(() => {
       if (!searchContainerRef.current?.contains(e.relatedTarget as Node)) {
         setShowSuggestions(false)
@@ -185,7 +171,6 @@ export function KanbanBoard() {
     }, 200)
   }
 
-  // Load recent searches from localStorage
   useEffect(() => {
     const stored = localStorage.getItem('recentSearches')
     if (stored) {
@@ -197,21 +182,10 @@ export function KanbanBoard() {
     }
   }, [])
 
-  // Update local search query when the global one changes
   useEffect(() => {
     setLocalSearchQuery(searchQuery)
   }, [searchQuery])
 
-  // Debug effect to log task data
-  useEffect(() => {
-    if (tasks.length > 0) {
-      console.log("Tasks loaded:", tasks.length)
-      console.log("Sample task with graph_id:", tasks[0])
-      console.log("Tasks with graph_id:", tasks.filter(t => t.graphId).length)
-    }
-  }, [tasks])
-
-  // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
@@ -255,10 +229,9 @@ export function KanbanBoard() {
 
   return (
     <div className="flex-1 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
-      {/* Header with Search, Stats and Refresh Button */}
-      <div className="relative p-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-[100]">
+      {/* Header without z-index */}
+      <div className="relative p-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-          {/* Enhanced Search Form with Suggestions */}
           <div ref={searchContainerRef} className="relative w-full sm:w-auto sm:min-w-[320px]">
             <form onSubmit={handleSearch} className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4 z-10" />
@@ -272,7 +245,6 @@ export function KanbanBoard() {
                 className="w-full pl-10 pr-10 bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 h-11 rounded-lg shadow-sm focus:shadow-md focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 dark:focus:border-blue-500 transition-all duration-200"
                 disabled={isSearching}
               />
-
               {isSearching ? (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 z-10">
                   <RefreshCw className="w-4 h-4 text-slate-400 animate-spin" />
@@ -288,10 +260,9 @@ export function KanbanBoard() {
               ) : null}
             </form>
 
-            {/* Search Suggestions Dropdown */}
+            {/* Dropdown with high z-index */}
             {showSuggestions && !isSearching && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-[9999] max-h-80 overflow-y-auto backdrop-blur-sm">
-                {/* Recent Searches */}
                 {recentSearches.length > 0 && (
                   <div className="p-2 border-b border-slate-100 dark:border-slate-700">
                     <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 px-2">Recent Searches</h4>
@@ -307,8 +278,6 @@ export function KanbanBoard() {
                     ))}
                   </div>
                 )}
-
-                {/* Search Suggestions */}
                 <div className="p-2">
                   <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 px-2">Quick Search</h4>
                   {searchSuggestions.map((suggestion) => (
@@ -327,7 +296,6 @@ export function KanbanBoard() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Stats Cards */}
             <div className="h-10 w-[160px] px-3 flex items-center bg-gradient-to-r from-red-50 to-red-100 dark:from-red-950/30 dark:to-red-900/20 rounded-md border border-red-200/50 dark:border-red-800/50">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded bg-red-500 flex items-center justify-center">
@@ -356,7 +324,6 @@ export function KanbanBoard() {
               </div>
             </div>
 
-            {/* Update Button */}
             <Button
               onClick={handleRefresh}
               disabled={isRefreshing}
@@ -369,8 +336,8 @@ export function KanbanBoard() {
                 </>
               ) : (
                 <>          
-                <RefreshCw className="w-4 h-4 mr-2" />
-               Refresh
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh
                 </>
               )}
             </Button>
@@ -379,7 +346,7 @@ export function KanbanBoard() {
       </div>
 
       {/* Kanban Board */}
-      <div className="pt-6 pr-6 pb-6 pl-2 overflow-auto h-full relative z-[1]">
+      <div className="pt-6 pr-6 pb-6 pl-2 overflow-auto h-full">
         {taskColumns.length > 0 ? (
           <div className="flex space-x-2 min-w-max pb-8">
             {taskColumns.map((column) => (
@@ -398,14 +365,14 @@ export function KanbanBoard() {
         )}
       </div>
 
-      {/* Task Detail Modal with enhanced debugging */}
+      {/* Task Detail Modal - ensure this has z-[1000] in its implementation */}
       <TaskDetailModal 
         task={selectedTask} 
         isOpen={showTaskDetail} 
         onClose={closeTaskDetail} 
       />
 
-      {/* Debug info in development */}
+      {/* Debug info */}
       {process.env.NODE_ENV === 'development' && selectedTask && (
         <div className="fixed bottom-4 right-4 bg-black/80 text-white p-2 rounded text-xs max-w-xs">
           <div>Selected Task ID: {selectedTask.id}</div>
@@ -413,6 +380,9 @@ export function KanbanBoard() {
           <div>Has Graph ID: {selectedTask.graphId ? '✅' : '❌'}</div>
         </div>
       )}
+    </div>
+  )
+}
 
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
@@ -430,6 +400,3 @@ export function KanbanBoard() {
           background: rgba(148, 163, 184, 0.5);
         }
       `}</style>
-    </div>
-  )
-}
