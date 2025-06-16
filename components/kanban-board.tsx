@@ -346,7 +346,7 @@ export function KanbanBoard() {
       </div>
 
       {/* Kanban Board */}
-      <div className="pt-6 pr-6 pb-6 pl-2 overflow-auto h-full z-10">
+      <div className="pt-6 pr-6 pb-6 pl-2 overflow-auto h-full z-10 custom-scrollbar">
         {taskColumns.length > 0 ? (
           <div className="flex space-x-2 min-w-max pb-8">
             {taskColumns.map((column) => (
@@ -384,19 +384,3 @@ export function KanbanBoard() {
   )
 }
 
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-          height: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(148, 163, 184, 0.3);
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(148, 163, 184, 0.5);
-        }
-      `}</style>

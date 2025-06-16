@@ -105,46 +105,51 @@ export const useTasks = () => {
   }
 
   const updateAndFetchTasks = async () => {
-    const authToken = getToken()
+  const authToken = getToken()
 
-    try {
-      setLoading(true)
-      globalLoading = true
-      setError(null)
-      globalError = null
+  try {
+    setLoading(true)
+    globalLoading = true
+    setError(null)
+    globalError = null
 
-      // First call the update API
-      const updateResponse = await axios.post<ApiResponse>(
-        UPDATE_API_URL,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            "Content-Type": "application/json",
-          },
+    console.log("Calling update API...")
+
+    // First call the update API
+    const updateResponse = await axios.post<{ status: boolean }>(
+      UPDATE_API_URL,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
         },
-      )
+      },
+    )
 
-      if (updateResponse.data.status && updateResponse.data.message) {
-        const transformedTasks = updateResponse.data.message.map(transformApiTask)
-        setTasks(transformedTasks)
-        updateGlobalState(transformedTasks, false, null)
-      } else {
-        throw new Error("Invalid update API response format")
-      }
-    } catch (err) {
-      console.error("Error updating tasks:", err)
-      const errorMessage = err instanceof Error ? err.message : "Failed to update tasks"
-      setError(errorMessage)
-      updateGlobalState([], false, errorMessage)
+    console.log("Update API Response:", updateResponse.data)
 
-      // Fallback to regular fetch if update fails
+    // Check if update was successful
+    if (updateResponse.data?.status) {
+      console.log("Update successful, fetching latest tasks...")
+      // After successful update, fetch the latest tasks
       await fetchTasks()
-    } finally {
-      setLoading(false)
-      globalLoading = false
+    } else {
+      throw new Error("Update API returned false status")
     }
+  } catch (err) {
+    console.error("Error in updateAndFetchTasks:", err)
+    const errorMessage = err instanceof Error ? err.message : "Failed to update tasks"
+    setError(errorMessage)
+    updateGlobalState([], false, errorMessage)
+
+    // Even if update fails, try to fetch existing tasks
+    await fetchTasks()
+  } finally {
+    setLoading(false)
+    globalLoading = false
   }
+}
 
   const searchTasks = async (query: string) => {
     const authToken = getToken()
