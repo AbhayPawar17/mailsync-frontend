@@ -758,43 +758,108 @@ const companyLogos = [
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-purple-50 relative z-10">
-        <div 
-          ref={howItWorksRef}
-          className="max-w-7xl mx-auto opacity-0 transition-all duration-1000 transform translate-y-8"
-        >
-          <div className="text-center mb-16">
-            <Badge className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 border-blue-200 mb-4">
-              <Zap className="w-4 h-4 mr-2" />
-              Simple Process
-            </Badge>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">How EmailSync AI Works</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Get started in minutes with our simple three-step process.
-            </p>
-          </div>
+<section
+      id="how-it-works"
+      className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-purple-50 relative z-10"
+    >
+      <div
+        ref={howItWorksRef}
+        className="max-w-4xl mx-auto opacity-0 transition-all duration-1000 transform translate-y-8"
+      >
+        <div className="text-center mb-16">
+          <Badge className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 border-blue-200 mb-4">
+            <Zap className="w-4 h-4 mr-2" />
+            Simple Process
+          </Badge>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">How EmailSync AI Works</h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Get started in minutes with our simple three-step process.
+          </p>
+        </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+        <div className="relative">
+          {/* Vertical connecting wire */}
+          <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 via-purple-400 to-blue-400 transform -translate-x-1/2 hidden md:block"></div>
+
+          {/* Mobile connecting wire */}
+          <div className="absolute left-8 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 via-purple-400 to-blue-400 md:hidden"></div>
+
+          <div className="space-y-12">
             {howItWorks.map((step, index) => (
-              <div 
+              <div
                 key={step.title}
-                className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 relative overflow-hidden hover:scale-105 transition-all duration-300"
+                className={`relative flex items-center ${
+                  index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
+                } flex-row`}
                 style={{ animationDelay: `${index * 200}ms` }}
               >
-                <div className="absolute -right-4 -top-4 text-8xl font-bold text-gray-100">{step.step}</div>
-                <div className="relative z-10">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">{step.title}</h3>
-                  <p className="text-gray-600 mb-6">{step.description}</p>
-                  <div className="flex items-center text-blue-600 font-medium">
-                    <span>Learn more</span>
-                    <ChevronRight className="w-4 h-4 ml-1" />
+                {/* Step number circle */}
+                <div className="absolute left-1/2 transform -translate-x-1/2 z-20 hidden md:block">
+                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-white font-bold text-lg">{step.step}</span>
                   </div>
+                </div>
+
+                {/* Mobile step number */}
+                <div className="absolute left-4 transform -translate-x-1/2 z-20 md:hidden">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-white font-bold text-sm">{step.step}</span>
+                  </div>
+                </div>
+
+                {/* Content card */}
+                <div
+                  className={`bg-white rounded-2xl p-8 shadow-lg border border-gray-100 relative overflow-hidden hover:scale-105 transition-all duration-300 ${
+                    index % 2 === 0 ? "md:mr-8 md:ml-auto md:w-5/12" : "md:ml-8 md:mr-auto md:w-5/12"
+                  } ml-16 md:ml-8 w-full md:w-5/12`}
+                >
+                  {/* Connecting line to center */}
+                  <div
+                    className={`absolute top-1/2 w-8 h-1 bg-gradient-to-r from-blue-400 to-purple-400 transform -translate-y-1/2 hidden md:block ${
+                      index % 2 === 0 ? "-right-8" : "-left-8"
+                    }`}
+                  ></div>
+
+                  {/* Mobile connecting line */}
+                  <div className="absolute top-1/2 -left-16 w-12 h-1 bg-gradient-to-r from-blue-400 to-purple-400 transform -translate-y-1/2 md:hidden"></div>
+
+                  <div className="absolute -right-4 -top-4 text-6xl font-bold text-gray-100 opacity-50">
+                    {step.step}
+                  </div>
+                  <div className="relative z-10">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-4">{step.title}</h3>
+                    <p className="text-gray-600 mb-6">{step.description}</p>
+                    <div className="flex items-center text-blue-600 font-medium cursor-pointer hover:text-purple-600 transition-colors">
+                      <span>Learn more</span>
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Decorative elements */}
+                <div
+                  className={`hidden md:block absolute ${
+                    index % 2 === 0 ? "right-0" : "left-0"
+                  } top-1/2 transform -translate-y-1/2`}
+                >
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
                 </div>
               </div>
             ))}
           </div>
+
+          {/* End cap for the wire */}
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 hidden md:block">
+            <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+          </div>
+
+          {/* Mobile end cap */}
+          <div className="absolute bottom-0 left-8 transform -translate-x-1/2 md:hidden">
+            <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+          </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       {/* Enhanced Testimonials Section */}
       <section id="testimonials" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-purple-50 relative z-10">

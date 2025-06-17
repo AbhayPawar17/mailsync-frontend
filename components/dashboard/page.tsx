@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, memo } from "react"
 import {
   CalendarIcon,
   Clock,
-  Filter,
   MapPin,
   Plus,
   Sparkles,
@@ -29,7 +28,7 @@ let globalAiSuggestions: { [key: string]: string[] } = {}
 let globalInitialized = false
 let globalAiInitialized = false
 
-const BASE_URI = process.env.NEXT_PUBLIC_BASE_URI;
+const BASE_URI = process.env.NEXT_PUBLIC_BASE_URI
 
 // Form type for React Hook Form
 type TaskFormValues = {
@@ -63,8 +62,6 @@ const TaskCard = memo(({ task, onClick }: TaskCardProps) => {
     switch (status) {
       case "Done":
         return <CheckCircle className="w-4 h-4 text-emerald-500" />
-      case "In Progress":
-        return <Circle className="w-4 h-4 text-amber-500 fill-amber-500/50" />
       default:
         return <Circle className="w-4 h-4 text-slate-500" />
     }
@@ -237,6 +234,9 @@ const CalendarDashboard = memo(() => {
   const [showAddTaskModal, setShowAddTaskModal] = useState(false)
   const [addingTask, setAddingTask] = useState(false)
 
+  // Add this new state variable after the existing state declarations
+  const [completingTaskId, setCompletingTaskId] = useState<string | number | null>(null)
+
   // Use ref to prevent multiple simultaneous fetches
   const fetchingTasks = useRef(false)
   const fetchingAi = useRef(false)
@@ -312,7 +312,6 @@ const CalendarDashboard = memo(() => {
           setTasks(transformedTasks)
           setLoading(false)
           setError(null)
-
         } else {
           throw new Error("Invalid API response format")
         }
@@ -373,7 +372,6 @@ const CalendarDashboard = memo(() => {
       setAiSuggestionsError(null)
 
       try {
-
         const response = await fetch(`${BASE_URI}/full_suggestion`, {
           method: "POST",
           headers: {
@@ -412,7 +410,6 @@ const CalendarDashboard = memo(() => {
 
           // Update component state
           setAiSuggestions(categorizedSuggestions)
-
         } else {
           throw new Error("Invalid API response format")
         }
@@ -456,7 +453,6 @@ const CalendarDashboard = memo(() => {
     setTasksError(null)
 
     try {
-
       const response = await fetch(`${BASE_URI}/all_task`, {
         method: "POST",
         headers: {
@@ -497,7 +493,6 @@ const CalendarDashboard = memo(() => {
     setTasksError(null)
 
     try {
-
       const response = await fetch(`${BASE_URI}/completed_task`, {
         method: "POST",
         headers: {
@@ -582,6 +577,8 @@ const CalendarDashboard = memo(() => {
 
   const completeTask = async (taskId: string | number) => {
     try {
+      setCompletingTaskId(taskId) // Start animation
+
       const formData = new FormData()
       formData.append("task_id", taskId.toString())
       formData.append("status", "completed")
@@ -600,16 +597,27 @@ const CalendarDashboard = memo(() => {
 
       const data = await response.json()
       if (data.status) {
-        fetchAllTasks() // Refresh tasks list
+        // Add a small delay to show the animation
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
+        // Refresh the current tasks list
+        await fetchAllTasks()
+
+        // If we're currently viewing the Done tab, refresh completed tasks too
         if (selectedTaskFilter === "Done") {
-          fetchCompletedTasks() // Also refresh completed tasks if we're on that filter
+          await fetchCompletedTasks()
         }
+
+        // Close the modal if it's open
+        setSelectedMeeting(null)
       } else {
         throw new Error(data.message || "Failed to complete task")
       }
     } catch (err) {
       console.error("Error completing task:", err)
       setTasksError(err instanceof Error ? err.message : "Failed to complete task")
+    } finally {
+      setCompletingTaskId(null) // End animation
     }
   }
 
@@ -658,7 +666,7 @@ const CalendarDashboard = memo(() => {
     return true
   })
 
-  const taskFilters = ["All","Done"]
+  const taskFilters = ["All", "Done"]
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -1010,99 +1018,143 @@ const CalendarDashboard = memo(() => {
 
   AddTaskModal.displayName = "AddTaskModal"
 
-const TaskDetailModal = memo(({ task }: { task: any }) => {
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto relative z-10">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{task.title}</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedMeeting(null)}
-              className="text-slate-500 hover:text-slate-700"
-            >
-              <X className="w-5 h-5" />
-            </Button>
-          </div>
+  const TaskDetailModal = memo(({ task }: { task: any }) => {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto relative z-10">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{task.title}</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedMeeting(null)}
+                className="text-slate-500 hover:text-slate-700"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
 
-          <div className="space-y-4">
-            {task.description && task.description !== "NA" && (
-              <div>
-                <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Description</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">{task.description}</p>
-              </div>
-            )}
+            <div className="space-y-4">
+              {task.description && task.description !== "NA" && (
+                <div>
+                  <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Description</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">{task.description}</p>
+                </div>
+              )}
 
-            {task.due_at && task.due_at !== "NA" && (
-              <div>
-                <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Meeting Time</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  {new Date(task.due_at).toLocaleString([], {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </p>
-              </div>
-            )}
+              {task.due_at && task.due_at !== "NA" && (
+                <div>
+                  <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Meeting Time</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    {new Date(task.due_at).toLocaleString([], {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              )}
 
-            {task.actionLink && task.actionLink !== "NA" && (
-              <div>
-                <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Meeting Link</h3>
-                <div className="mt-2">
-                  {/* Extract the second URL from the comma-separated string */}
-                  {(() => {
-                    const urls = task.actionLink.split(',').map((url: string) => url.trim());
-                    const teamsUrl = urls.length > 1 ? urls[1] : urls[0];
-                    
-                    return (
-                      <a
-                        href={teamsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
-                      >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Join Teams Meeting
-                      </a>
-                    );
-                  })()}
-                  
-                  <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 break-all">
-                    {/* Display both URLs with labels */}
-                    <div className="mb-1">
-                      <span className="font-medium">General Link:</span> {task.actionLink.split(',')[0].trim()}
-                    </div>
-                    {task.actionLink.includes(',') && (
-                      <div>
-                        <span className="font-medium">Teams Link:</span> {task.actionLink.split(',')[1].trim()}
+              {task.actionLink && task.actionLink !== "NA" && (
+                <div>
+                  <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Meeting Link</h3>
+                  <div className="mt-2">
+                    {/* Extract the second URL from the comma-separated string */}
+                    {(() => {
+                      const urls = task.actionLink.split(",").map((url: string) => url.trim())
+                      const teamsUrl = urls.length > 1 ? urls[1] : urls[0]
+
+                      return (
+                        <a
+                          href={teamsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Join Teams Meeting
+                        </a>
+                      )
+                    })()}
+
+                    <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 break-all">
+                      {/* Display both URLs with labels */}
+                      <div className="mb-1">
+                        <span className="font-medium">General Link:</span> {task.actionLink.split(",")[0].trim()}
                       </div>
-                    )}
+                      {task.actionLink.includes(",") && (
+                        <div>
+                          <span className="font-medium">Teams Link:</span> {task.actionLink.split(",")[1].trim()}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {task.from_name && (
-              <div>
-                <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Organizer</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  {task.from_name} {task.from_email && `(${task.from_email})`}
-                </p>
-              </div>
-            )}
+              {task.from_name && (
+                <div>
+                  <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Organizer</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    {task.from_name} {task.from_email && `(${task.from_email})`}
+                  </p>
+                </div>
+              )}
 
+              {/* Task Completion Section */}
+              {task.task_completed !== "1" && (
+                <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <Button
+                    onClick={async () => {
+                      await completeTask(task.id)
+                    }}
+                    disabled={completingTaskId === task.id}
+                    className={`w-full font-medium py-3 rounded-lg transition-all duration-300 transform ${
+                      completingTaskId === task.id
+                        ? "bg-gradient-to-r from-green-400 to-emerald-400 scale-105 shadow-lg animate-pulse"
+                        : "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 hover:scale-105"
+                    } text-white`}
+                  >
+                    {completingTaskId === task.id ? (
+                      <>
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                          <span>Completing...</span>
+                          <div className="flex space-x-1">
+                            <div
+                              className="w-2 h-2 bg-white rounded-full animate-bounce"
+                              style={{ animationDelay: "0ms" }}
+                            ></div>
+                            <div
+                              className="w-2 h-2 bg-white rounded-full animate-bounce"
+                              style={{ animationDelay: "150ms" }}
+                            ></div>
+                            <div
+                              className="w-2 h-2 bg-white rounded-full animate-bounce"
+                              style={{ animationDelay: "300ms" }}
+                            ></div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-5 h-5 mr-2" />
+                        Mark as Completed
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  )
-})
+    )
+  })
 
   TaskDetailModal.displayName = "TaskDetailModal"
 
@@ -1339,18 +1391,6 @@ const TaskDetailModal = memo(({ task }: { task: any }) => {
                   </Button>
                 ))}
               </div>
-
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={fetchAllTasks}
-                  className="hover:scale-105 transition-transform duration-200"
-                >
-                  <Filter className="w-4 h-4 mr-1" />
-                  Refresh
-                </Button>
-              </div>
             </div>
 
             {/* Error Display */}
@@ -1376,59 +1416,61 @@ const TaskDetailModal = memo(({ task }: { task: any }) => {
               </div>
             )}
 
-            {/* Tasks Grid */}
-            {tasksLoading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-              </div>
-            ) : realTasks.length === 0 ? (
-              <div className="text-center py-8 text-slate-500">
-                <div className="w-12 h-12 mx-auto mb-4 text-slate-300">
-                  <Circle className="w-full h-full" />
+            {/* Tasks Grid with Scrollbar */}
+            <div className="max-h-[70vh] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-slate-400 scrollbar-track-slate-200 dark:scrollbar-thumb-slate-600 dark:scrollbar-track-slate-700 pr-2">
+              {tasksLoading ? (
+                <div className="flex justify-center items-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
                 </div>
-                <h3 className="text-lg font-medium mb-2">No tasks found</h3>
-                <p>Add your first task using the form above.</p>
-              </div>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {selectedTaskFilter === "Done" ? (
-                  isLoadingCompleted ? (
-                    <div className="col-span-full flex justify-center items-center h-64">
-                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-                    </div>
-                  ) : completedTasks.length === 0 ? (
-                    <div className="col-span-full text-center py-8 text-slate-500">
-                      <CheckCircle className="w-12 h-12 mx-auto mb-4 text-slate-300" />
-                      <h3 className="text-lg font-medium mb-2">No completed tasks</h3>
-                      <p>Complete a task to see it here.</p>
-                    </div>
+              ) : realTasks.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">
+                  <div className="w-12 h-12 mx-auto mb-4 text-slate-300">
+                    <Circle className="w-full h-full" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2">No tasks found</h3>
+                  <p>Add your first task using the form above.</p>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {selectedTaskFilter === "Done" ? (
+                    isLoadingCompleted ? (
+                      <div className="col-span-full flex justify-center items-center h-64">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+                      </div>
+                    ) : completedTasks.length === 0 ? (
+                      <div className="col-span-full text-center py-8 text-slate-500">
+                        <CheckCircle className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+                        <h3 className="text-lg font-medium mb-2">No completed tasks</h3>
+                        <p>Complete a task to see it here.</p>
+                      </div>
+                    ) : (
+                      completedTasks.map((task) => (
+                        <RealTaskCard
+                          key={task.id}
+                          task={{ ...task, task_completed: "1" }}
+                          onComplete={() => {}}
+                          onClick={() => setSelectedMeeting(task)}
+                        />
+                      ))
+                    )
                   ) : (
-                    completedTasks.map((task) => (
-                      <RealTaskCard
-                        key={task.id}
-                        task={{ ...task, task_completed: "1" }}
-                        onComplete={() => {}}
-                        onClick={() => setSelectedMeeting(task)}
-                      />
-                    ))
-                  )
-                ) : (
-                  realTasks
-                    .filter((task) => {
-                      if (selectedTaskFilter === "All") return true
-                      return task.status === selectedTaskFilter
-                    })
-                    .map((task) => (
-                      <RealTaskCard
-                        key={task.id}
-                        task={task}
-                        onComplete={() => completeTask(task.id)}
-                        onClick={() => setSelectedMeeting(task)}
-                      />
-                    ))
-                )}
-              </div>
-            )}
+                    realTasks
+                      .filter((task) => {
+                        if (selectedTaskFilter === "All") return true
+                        return task.status === selectedTaskFilter
+                      })
+                      .map((task) => (
+                        <RealTaskCard
+                          key={task.id}
+                          task={task}
+                          onComplete={() => completeTask(task.id)}
+                          onClick={() => setSelectedMeeting(task)}
+                        />
+                      ))
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </main>
       </div>
