@@ -9,14 +9,11 @@ import { MetricCard } from "@/components/metric-card"
 import { WeeklyActivityChart } from "@/components/weekly-activity-chart"
 import { SentimentChart } from "@/components/sentiment-chart"
 import { CategoryChart } from "@/components/category-chart"
-import { FocusTimeChart } from "@/components/focus-time-chart"
-import { AISuggestions } from "@/components/ai-suggestions"
 import {
   metricsData,
-  focusTimeData,
-  aiSuggestions,
 } from "@/data/insights-data"
 import CalendarDashboard from "@/components/dashboard/page"
+import TaskSummary from "@/components/focus-time-chart"
 
 export default function TaskManagementApp() {
   const {
@@ -72,10 +69,9 @@ export default function TaskManagementApp() {
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-                <FocusTimeChart data={focusTimeData} />
-                <AISuggestions suggestions={aiSuggestions} />
-              </div>
+                {/* <FocusTimeChart data={focusTimeData} />
+                <AISuggestions suggestions={aiSuggestions} /> */}
+                <TaskSummary/>
             </div>
           </div>
         )

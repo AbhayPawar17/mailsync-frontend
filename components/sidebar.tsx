@@ -175,11 +175,6 @@ export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, se
 
         {/* Folders */}
         <div className="p-4 flex-1">
-          {!sidebarCollapsed && (
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 transition-all duration-300">
-              FOLDERS
-            </div>
-          )}
           <nav className="space-y-1">
             {folderItems.map((item, index) => (
               <Button

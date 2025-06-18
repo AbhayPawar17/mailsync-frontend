@@ -334,9 +334,7 @@ const companyLogos = [
             <a href="#testimonials" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
               Testimonials
             </a>
-            <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
-              Sign In
-            </Button>
+
             <Link href="/sync-mail">
               <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg px-4 py-2 rounded cursor-pointer">
                 Get Started
@@ -367,9 +365,7 @@ const companyLogos = [
                 Testimonials
               </a>
               <div className="pt-4 space-y-2">
-                <Button variant="ghost" className="w-full">
-                  Sign In
-                </Button>
+               
                 <Link href="/sync-mail">
               <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg px-4 py-2 rounded cursor-pointer">
                 Get Started

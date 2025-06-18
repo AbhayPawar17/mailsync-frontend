@@ -55,10 +55,15 @@ export function WeeklyActivityChart() {
   const data = getWeeklyActivityData()
   const maxValue = Math.max(...data.map((d) => Math.max(d.emails, d.meetings, d.urgent)))
 
-  const handleMouseEnter = (dayData: ActivityData, event: React.MouseEvent) => {
-    setHoveredDay(dayData)
-    setTooltipPosition({ x: event.clientX, y: event.clientY })
-  }
+const handleMouseEnter = (dayData: ActivityData, event: React.MouseEvent<HTMLDivElement>) => {
+  setHoveredDay(dayData)
+  const barElement = event.currentTarget
+  const rect = barElement.getBoundingClientRect()
+  setTooltipPosition({
+    x: rect.left + rect.width / 2, // Center of the bar
+    y: rect.top - 10 // Just above the bar
+  })
+}
 
   const handleMouseLeave = () => {
     setHoveredDay(null)
@@ -128,14 +133,14 @@ export function WeeklyActivityChart() {
       </CardContent>
 
       {/* Tooltip */}
-      {hoveredDay && (
-        <div 
-          className="absolute z-50 p-3 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg pointer-events-none"
-          style={{
-            left: `${tooltipPosition.x + 10}px`,
-            top: `${tooltipPosition.y + 10}px`,
-            transform: 'translateX(-50%)'
-          }}
+{hoveredDay && (
+  <div 
+    className="absolute z-50 p-3 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg pointer-events-none"
+    style={{
+      left: `${tooltipPosition.x}px`,
+      top: `${tooltipPosition.y}px`,
+      transform: 'translateX(-220%) translateY(-150%)' // This will position it centered and above
+    }}
         >
           <div className="font-semibold mb-1">{hoveredDay.day}</div>
           <div className="flex items-center space-x-2">
