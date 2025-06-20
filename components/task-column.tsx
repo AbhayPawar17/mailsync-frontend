@@ -11,7 +11,8 @@ interface TaskColumnProps {
 
 export function TaskColumn({ column, onTaskClick }: TaskColumnProps) {
   const getColumnStyle = (title: string) => {
-    switch (title.toLowerCase()) {
+    const normalizedTitle = title.toLowerCase()
+    switch (normalizedTitle) {
       case "meeting":
         return {
           headerBg: "bg-gradient-to-r from-blue-0 to-blue-50",
@@ -19,6 +20,7 @@ export function TaskColumn({ column, onTaskClick }: TaskColumnProps) {
           titleColor: "text-blue-700",
           badgeColor: "bg-blue-100 text-blue-700",
           columnBg: "bg-gradient-to-b from-blue-50/30 to-slate-50/50",
+          fontWeight: "font-semibold" // Added
         }
       case "work":
         return {
@@ -27,6 +29,7 @@ export function TaskColumn({ column, onTaskClick }: TaskColumnProps) {
           titleColor: "text-purple-700",
           badgeColor: "bg-purple-100 text-purple-700",
           columnBg: "bg-gradient-to-b from-purple-50/30 to-slate-50/50",
+          fontWeight: "font-semibold" // Added
         }
       case "task":
         return {
@@ -35,18 +38,19 @@ export function TaskColumn({ column, onTaskClick }: TaskColumnProps) {
           titleColor: "text-emerald-700",
           badgeColor: "bg-emerald-100 text-emerald-700",
           columnBg: "bg-gradient-to-b from-emerald-50/30 to-slate-50/50",
+          fontWeight: "font-semibold" // Added
         }
       case "top urgent":
         return {
-          headerBg:
-            "bg-gradient-to-br from-red-600 via-red-500 to-red-400",
+          headerBg: "bg-gradient-to-br from-red-600 via-red-500 to-red-400",
           headerBorder: "border-red-200/50",
           titleColor: "text-white font-semibold",
           badgeColor: "bg-white/95 text-red-600 font-medium shadow-sm",
-          columnBg:
-            "bg-gradient-to-b from-red-50/40 to-red-50/30",
+          columnBg: "bg-gradient-to-b from-red-50/40 to-red-50/30",
           borderColor: "border-red-200/60",
           shadowColor: "shadow-red-500/20",
+          displayTitle: "High Priority",
+          fontWeight: "font-semibold" // Added (already had semibold in titleColor)
         }
       case "notification":
         return {
@@ -55,6 +59,7 @@ export function TaskColumn({ column, onTaskClick }: TaskColumnProps) {
           titleColor: "text-amber-700",
           badgeColor: "bg-amber-100 text-amber-700",
           columnBg: "bg-gradient-to-b from-amber-50/30 to-slate-50/50",
+          fontWeight: "font-semibold" // Added
         }
       default:
         return {
@@ -63,55 +68,60 @@ export function TaskColumn({ column, onTaskClick }: TaskColumnProps) {
           titleColor: "text-slate-700",
           badgeColor: "bg-slate-100 text-slate-700",
           columnBg: "bg-gradient-to-b from-slate-50/30 to-slate-50/50",
+          fontWeight: "font-semibold" // Added
         }
     }
   }
 
-  const isTopUrgent = column.title.toLowerCase() === "top urgent"
+  const isHighPriority = column.title.toLowerCase() === "top urgent"
+  const columnStyle = getColumnStyle(column.title)
+  const displayTitle = isHighPriority ? "High Priority" : column.title
 
   const getColumnWidthClasses = () => {
-    if (isTopUrgent) {
+    if (isHighPriority) {
       return "w-[380px] sm:w-[400px] md:w-[420px]"
     } else {
       return "w-76 sm:w-88 md:w-88"
     }
   }
 
-  const style = getColumnStyle(column.title)
-
   return (
     <div
-      className={`${getColumnWidthClasses()} flex-shrink-0 ${style.columnBg} rounded-xl border ${
-        isTopUrgent
-          ? `${style.borderColor} shadow-xl ${style.shadowColor} ring-1 ring-orange-200/30`
+      className={`${getColumnWidthClasses()} flex-shrink-0 ${columnStyle.columnBg} rounded-xl border ${
+        isHighPriority
+          ? `${columnStyle.borderColor} shadow-xl ${columnStyle.shadowColor} ring-1 ring-orange-200/30`
           : "border-slate-200/50 shadow-lg shadow-slate-200/20"
       } backdrop-blur-sm transition-all duration-300 hover:shadow-2xl ${
-        isTopUrgent ? `hover:${style.shadowColor} hover:ring-orange-300/40` : ""
+        isHighPriority ? `hover:${columnStyle.shadowColor} hover:ring-orange-300/40` : ""
       }`}
     >
       {/* Column Header */}
       <div
-        className={`${style.headerBg} ${style.headerBorder} border-b rounded-t-xl px-6 py-5 relative overflow-hidden`}
+        className={`${columnStyle.headerBg} ${columnStyle.headerBorder} border-b rounded-t-xl px-6 py-5 relative overflow-hidden`}
       >
-        {isTopUrgent && (
+        {isHighPriority && (
           <>
             {/* Subtle gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/5"></div>
-            </>
+          </>
         )}
 
         <div className="flex items-center justify-between relative z-10">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              {isTopUrgent && (
+              {isHighPriority && (
                 <div className="relative">
                   <div className="w-2.5 h-2.5 bg-white/90 rounded-full"></div>
                   <div className="absolute inset-0 w-2.5 h-2.5 bg-white/60 rounded-full animate-ping"></div>
                 </div>
               )}
-              <h2 className={`text-lg ${style.titleColor} ${isTopUrgent ? "text-xl" : ""}`}>{column.title}</h2>
+              <h2 className={`text-lg ${columnStyle.titleColor} ${columnStyle.fontWeight} ${isHighPriority ? "text-xl" : ""}`}>
+                {displayTitle}
+              </h2>
             </div>
-            <Badge className={`${style.badgeColor} px-3 py-1 text-sm rounded-full`}>{column.count}</Badge>
+            <Badge className={`${columnStyle.badgeColor} px-3 py-1 text-sm rounded-full`}>
+              {column.count}
+            </Badge>
           </div>
         </div>
       </div>

@@ -38,11 +38,6 @@ type TaskFormValues = {
   action_link: string
 }
 
-interface TaskDetailModalProps {
-  task: any;
-  isCalendarTask?: boolean;
-}
-
 // TaskCard Component
 interface TaskCardProps {
   task: Task
@@ -241,6 +236,7 @@ const CalendarDashboard = memo(() => {
 
   // Add this new state variable after the existing state declarations
   const [completingTaskId, setCompletingTaskId] = useState<string | number | null>(null)
+  const [selectedCalendarMeeting, setSelectedCalendarMeeting] = useState<Task | null>(null)
 
   // Use ref to prevent multiple simultaneous fetches
   const fetchingTasks = useRef(false)
@@ -734,7 +730,7 @@ const CalendarDashboard = memo(() => {
   const MeetingCard = memo(({ meeting }: { meeting: Task }) => (
     <Card
       className={`mb-2 cursor-pointer hover:shadow-md transition-all duration-300 hover:scale-[1.01] transform border-l-4 ${getPriorityColor(meeting.priority)}`}
-      onClick={() => setSelectedMeeting(meeting)}
+      onClick={() => setSelectedCalendarMeeting(meeting)}
     >
       <CardContent className="pt-3 pb-3 px-4">
         <div className="flex items-start justify-between mb-1">
@@ -1023,7 +1019,7 @@ const CalendarDashboard = memo(() => {
 
   AddTaskModal.displayName = "AddTaskModal"
 
-const TaskDetailModal = memo(({ task, isCalendarTask = false }: TaskDetailModalProps) => {
+  const TaskDetailModal = memo(({ task }: { task: any }) => {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto relative z-10">
@@ -1111,7 +1107,7 @@ const TaskDetailModal = memo(({ task, isCalendarTask = false }: TaskDetailModalP
               )}
 
               {/* Task Completion Section */}
-              { !isCalendarTask && task.task_completed !== "1" && (
+              {task.task_completed !== "1" && (
                 <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
                   <Button
                     onClick={async () => {
@@ -1162,6 +1158,108 @@ const TaskDetailModal = memo(({ task, isCalendarTask = false }: TaskDetailModalP
   })
 
   TaskDetailModal.displayName = "TaskDetailModal"
+
+  const MeetingDetailModal = memo(({ meeting }: { meeting: any }) => {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto relative z-10">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{meeting.title}</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedCalendarMeeting(null)}
+                className="text-slate-500 hover:text-slate-700"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {meeting.description && meeting.description !== "NA" && (
+                <div>
+                  <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Description</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">{meeting.description}</p>
+                </div>
+              )}
+
+              {meeting.due_at && meeting.due_at !== "NA" && (
+                <div>
+                  <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Meeting Time</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    {new Date(meeting.due_at).toLocaleString([], {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              )}
+
+              {meeting.actionLink && meeting.actionLink !== "NA" && (
+                <div>
+                  <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Meeting Link</h3>
+                  <div className="mt-2">
+                    {(() => {
+                      const urls = meeting.actionLink.split(",").map((url: string) => url.trim())
+                      const teamsUrl = urls.length > 1 ? urls[1] : urls[0]
+
+                      return (
+                        <a
+                          href={teamsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Join Teams Meeting
+                        </a>
+                      )
+                    })()}
+
+                    <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 break-all">
+                      <div className="mb-1">
+                        <span className="font-medium">General Link:</span> {meeting.actionLink.split(",")[0].trim()}
+                      </div>
+                      {meeting.actionLink.includes(",") && (
+                        <div>
+                          <span className="font-medium">Teams Link:</span> {meeting.actionLink.split(",")[1].trim()}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {meeting.fromName && (
+                <div>
+                  <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Organizer</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    {meeting.fromName} {meeting.fromEmail && `(${meeting.fromEmail})`}
+                  </p>
+                </div>
+              )}
+
+              {meeting.sentimental && (
+                <div>
+                  <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">Sentiment</h3>
+                  <Badge className={`${getSentimentColor(meeting.sentimental)} text-xs px-2 py-1`}>
+                    {sentimentEmoji(meeting.sentimental)} {meeting.sentimental}
+                  </Badge>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  })
+
+  MeetingDetailModal.displayName = "MeetingDetailModal"
 
   // Don't render until mounted to prevent hydration mismatch
   if (!mounted) {
@@ -1484,7 +1582,10 @@ const TaskDetailModal = memo(({ task, isCalendarTask = false }: TaskDetailModalP
       {showAddTaskModal && <AddTaskModal />}
 
       {/* Task Detail Modal */}
-      {selectedMeeting && <TaskDetailModal task={selectedMeeting} isCalendarTask />}
+      {selectedMeeting && <TaskDetailModal task={selectedMeeting} />}
+
+      {/* Meeting Detail Modal */}
+      {selectedCalendarMeeting && <MeetingDetailModal meeting={selectedCalendarMeeting} />}
     </div>
   )
 })
