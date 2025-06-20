@@ -38,6 +38,11 @@ type TaskFormValues = {
   action_link: string
 }
 
+interface TaskDetailModalProps {
+  task: any;
+  isCalendarTask?: boolean;
+}
+
 // TaskCard Component
 interface TaskCardProps {
   task: Task
@@ -1018,7 +1023,7 @@ const CalendarDashboard = memo(() => {
 
   AddTaskModal.displayName = "AddTaskModal"
 
-  const TaskDetailModal = memo(({ task }: { task: any }) => {
+const TaskDetailModal = memo(({ task, isCalendarTask = false }: TaskDetailModalProps) => {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto relative z-10">
@@ -1106,7 +1111,7 @@ const CalendarDashboard = memo(() => {
               )}
 
               {/* Task Completion Section */}
-              {task.task_completed !== "1" && (
+              { !isCalendarTask && task.task_completed !== "1" && (
                 <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
                   <Button
                     onClick={async () => {
@@ -1479,7 +1484,7 @@ const CalendarDashboard = memo(() => {
       {showAddTaskModal && <AddTaskModal />}
 
       {/* Task Detail Modal */}
-      {selectedMeeting && <TaskDetailModal task={selectedMeeting} />}
+      {selectedMeeting && <TaskDetailModal task={selectedMeeting} isCalendarTask />}
     </div>
   )
 })
