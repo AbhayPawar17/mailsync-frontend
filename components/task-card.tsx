@@ -14,7 +14,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "High":
-        return "bg-gradient-to-br from-red-50 to-red-100 border-red-200 dark:from-red-950/30 dark:to-red-900/20 dark:border-red-800/50"
+        return "bg-gradient-to-br from-red-50 to-red-100 border-red-300 dark:from-red-950/30 dark:to-red-900/20 dark:border-red-800/50"
       case "Medium":
         return "bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 dark:from-amber-950/30 dark:to-amber-900/20"
       case "Low":

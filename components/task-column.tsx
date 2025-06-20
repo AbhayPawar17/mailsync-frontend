@@ -14,80 +14,114 @@ export function TaskColumn({ column, onTaskClick }: TaskColumnProps) {
     switch (title.toLowerCase()) {
       case "meeting":
         return {
-          headerBg: "bg-gradient-to-r from-blue-0 to-blue-50 dark:from-blue-950/50 dark:to-blue-900/30",
-          headerBorder: "border-blue-200 dark:border-blue-800/50",
-          titleColor: "text-blue-700 dark:text-blue-400",
-          badgeColor: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400",
-          columnBg: "bg-gradient-to-b from-blue-50/30 to-slate-50/50 dark:from-blue-950/20 dark:to-slate-900/30",
+          headerBg: "bg-gradient-to-r from-blue-0 to-blue-50",
+          headerBorder: "border-blue-200",
+          titleColor: "text-blue-700",
+          badgeColor: "bg-blue-100 text-blue-700",
+          columnBg: "bg-gradient-to-b from-blue-50/30 to-slate-50/50",
         }
       case "work":
         return {
-          headerBg: "bg-gradient-to-r from-purple-0 to-purple-50 dark:from-purple-950/50 dark:to-purple-900/30",
-          headerBorder: "border-purple-200 dark:border-purple-800/50",
-          titleColor: "text-purple-700 dark:text-purple-400",
-          badgeColor: "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400",
-          columnBg: "bg-gradient-to-b from-purple-50/30 to-slate-50/50 dark:from-purple-950/20 dark:to-slate-900/30",
+          headerBg: "bg-gradient-to-r from-purple-0 to-purple-50",
+          headerBorder: "border-purple-200",
+          titleColor: "text-purple-700",
+          badgeColor: "bg-purple-100 text-purple-700",
+          columnBg: "bg-gradient-to-b from-purple-50/30 to-slate-50/50",
         }
-      case "Task":
+      case "task":
         return {
-          headerBg: "bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-950/50 dark:to-emerald-900/30",
-          headerBorder: "border-emerald-200 dark:border-emerald-800/50",
-          titleColor: "text-emerald-700 dark:text-emerald-400",
-          badgeColor: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400",
-          columnBg: "bg-gradient-to-b from-emerald-50/30 to-slate-50/50 dark:from-emerald-950/20 dark:to-slate-900/30",
+          headerBg: "bg-gradient-to-r from-emerald-50 to-emerald-100",
+          headerBorder: "border-emerald-200",
+          titleColor: "text-emerald-700",
+          badgeColor: "bg-emerald-100 text-emerald-700",
+          columnBg: "bg-gradient-to-b from-emerald-50/30 to-slate-50/50",
         }
       case "top urgent":
         return {
-          headerBg: "bg-gradient-to-r from-orange-0 to-orange-50 dark:from-red-950/50 dark:to-red-900/30",
-          headerBorder: "border-orange-200 dark:border-red-800/50",
-          titleColor: "text-orange-700 dark:text-orange-400",
-          badgeColor: "bg-orange-100 text-orange-700 dark:bg-red-900/50 dark:text-red-400",
-          columnBg: "bg-gradient-to-b from-orange-50/30 to-slate-50/50 dark:from-red-950/20 dark:to-slate-900/30",
+          headerBg:
+            "bg-gradient-to-br from-red-600 via-red-500 to-red-400",
+          headerBorder: "border-red-200/50",
+          titleColor: "text-white font-semibold",
+          badgeColor: "bg-white/95 text-red-600 font-medium shadow-sm",
+          columnBg:
+            "bg-gradient-to-b from-red-50/40 to-red-50/30",
+          borderColor: "border-red-200/60",
+          shadowColor: "shadow-red-500/20",
         }
       case "notification":
         return {
-          headerBg: "bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-950/50 dark:to-amber-900/30",
-          headerBorder: "border-amber-200 dark:border-amber-800/50",
-          titleColor: "text-amber-700 dark:text-amber-400",
-          badgeColor: "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400",
-          columnBg: "bg-gradient-to-b from-amber-50/30 to-slate-50/50 dark:from-amber-950/20 dark:to-slate-900/30",
+          headerBg: "bg-gradient-to-r from-amber-50 to-amber-100",
+          headerBorder: "border-amber-200",
+          titleColor: "text-amber-700",
+          badgeColor: "bg-amber-100 text-amber-700",
+          columnBg: "bg-gradient-to-b from-amber-50/30 to-slate-50/50",
         }
       default:
         return {
-          headerBg: "bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-950/50 dark:to-slate-900/30",
-          headerBorder: "border-slate-200 dark:border-slate-800/50",
-          titleColor: "text-slate-700 dark:text-slate-400",
-          badgeColor: "bg-slate-100 text-slate-700 dark:bg-slate-900/50 dark:text-slate-400",
-          columnBg: "bg-gradient-to-b from-slate-50/30 to-slate-50/50 dark:from-slate-950/20 dark:to-slate-900/30",
+          headerBg: "bg-gradient-to-r from-slate-50 to-slate-100",
+          headerBorder: "border-slate-200",
+          titleColor: "text-slate-700",
+          badgeColor: "bg-slate-100 text-slate-700",
+          columnBg: "bg-gradient-to-b from-slate-50/30 to-slate-50/50",
         }
+    }
+  }
+
+  const isTopUrgent = column.title.toLowerCase() === "top urgent"
+
+  const getColumnWidthClasses = () => {
+    if (isTopUrgent) {
+      return "w-[380px] sm:w-[400px] md:w-[420px]"
+    } else {
+      return "w-76 sm:w-88 md:w-88"
     }
   }
 
   const style = getColumnStyle(column.title)
 
   return (
-   <div
-  className={`w-76 sm:w-88 md:w-88 flex-shrink-0 ${style.columnBg} rounded-xl border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm shadow-lg shadow-slate-200/20 dark:shadow-slate-900/20`}
->
-
+    <div
+      className={`${getColumnWidthClasses()} flex-shrink-0 ${style.columnBg} rounded-xl border ${
+        isTopUrgent
+          ? `${style.borderColor} shadow-xl ${style.shadowColor} ring-1 ring-orange-200/30`
+          : "border-slate-200/50 shadow-lg shadow-slate-200/20"
+      } backdrop-blur-sm transition-all duration-300 hover:shadow-2xl ${
+        isTopUrgent ? `hover:${style.shadowColor} hover:ring-orange-300/40` : ""
+      }`}
+    >
       {/* Column Header */}
-      <div className={`${style.headerBg} ${style.headerBorder} border-b rounded-t-xl p-4`}>
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center space-x-3">
-            <h2 className={`font-bold text-lg ${style.titleColor}`}>{column.title}</h2>
-            <Badge className={`${style.badgeColor} font-semibold px-2.5 py-1 text-sm shadow-sm`}>{column.count}</Badge>
+      <div
+        className={`${style.headerBg} ${style.headerBorder} border-b rounded-t-xl px-6 py-5 relative overflow-hidden`}
+      >
+        {isTopUrgent && (
+          <>
+            {/* Subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/5"></div>
+            </>
+        )}
+
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              {isTopUrgent && (
+                <div className="relative">
+                  <div className="w-2.5 h-2.5 bg-white/90 rounded-full"></div>
+                  <div className="absolute inset-0 w-2.5 h-2.5 bg-white/60 rounded-full animate-ping"></div>
+                </div>
+              )}
+              <h2 className={`text-lg ${style.titleColor} ${isTopUrgent ? "text-xl" : ""}`}>{column.title}</h2>
+            </div>
+            <Badge className={`${style.badgeColor} px-3 py-1 text-sm rounded-full`}>{column.count}</Badge>
           </div>
-         
         </div>
       </div>
 
       {/* Tasks Container */}
-      <div className="p-4 space-y-3 min-h-[550px] max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+      <div className="p-6 space-y-4 min-h-[550px] max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
         {column.tasks.map((task) => (
           <TaskCard key={task.id} task={task} onClick={() => onTaskClick(task.id)} />
         ))}
       </div>
-
     </div>
   )
 }
