@@ -1367,87 +1367,94 @@ const CalendarDashboard = memo(() => {
             </div>
 
             {/* AI Suggestions - Right Side */}
-            <div className="lg:col-span-6 bg-gradient-to-br from-purple-50 via-indigo-50/80 to-blue-50 dark:from-purple-950/30 dark:via-indigo-950/25 dark:to-blue-950/20 rounded-2xl border border-purple-200/60 dark:border-purple-700/40 backdrop-blur-sm shadow-xl p-6 relative overflow-hidden">
-              {/* Background decorative elements */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-400/20 to-transparent rounded-full blur-2xl"></div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-400/20 to-transparent rounded-full blur-xl"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl shadow-lg">
-                      <Sparkles className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="font-bold text-2xl bg-gradient-to-r from-purple-700 via-indigo-600 to-blue-600 dark:from-purple-400 dark:via-indigo-400 dark:to-blue-400 bg-clip-text text-transparent">
-                        AI Insights
-                      </h2>
-                      <p className="text-sm text-purple-600/80 dark:text-purple-400/80 font-medium">
-                        Personalized recommendations
-                      </p>
+<div className="lg:col-span-6 bg-gradient-to-br from-purple-50 via-indigo-50/80 to-blue-50 dark:from-purple-950/30 dark:via-indigo-950/25 dark:to-blue-950/20 rounded-2xl border border-purple-200/60 dark:border-purple-700/40 backdrop-blur-sm shadow-xl p-6 relative overflow-hidden">
+  {/* Background decorative elements */}
+  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-400/20 to-transparent rounded-full blur-2xl"></div>
+  <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-400/20 to-transparent rounded-full blur-xl"></div>
+  <div className="relative z-10">
+    <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center space-x-4">
+        <div className="p-2 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl shadow-lg">
+          <Sparkles className="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <h2 className="font-bold text-2xl bg-gradient-to-r from-purple-700 via-indigo-600 to-blue-600 dark:from-purple-400 dark:via-indigo-400 dark:to-blue-400 bg-clip-text text-transparent">
+            AI Insights
+          </h2>
+          <p className="text-sm text-purple-600/80 dark:text-purple-400/80 font-medium">
+            Personalized recommendations
+          </p>
+        </div>
+      </div>
+      {!aiSuggestionsLoading && (
+        <div className="flex items-center space-x-2">
+          <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold px-4 py-2 text-sm shadow-lg border-0">
+            <Sparkles className="w-3 h-3 mr-1" />
+            {Object.values(aiSuggestions).flat().length}
+          </Badge>
+        </div>
+      )}
+    </div>
+
+    {aiSuggestionsLoading ? (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    ) : (
+      <div className="max-h-[500px] overflow-y-auto space-y-6 pr-2 scrollbar-thin scrollbar-thumb-purple-300 dark:scrollbar-thumb-purple-700 scrollbar-track-transparent">
+        {Object.entries(aiSuggestions).map(([category, suggestions]) => (
+          <div key={category} className="space-y-4">
+            {/* Category Header */}
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg shadow-md">
+                <div className="w-3 h-3 rounded-full bg-white"></div>
+              </div>
+              <h3 className="font-bold text-lg bg-gradient-to-r from-purple-800 to-indigo-700 dark:from-purple-300 dark:to-indigo-300 bg-clip-text text-transparent">
+                {category}
+              </h3>
+              <div className="flex-1 h-px bg-gradient-to-r from-purple-300 via-indigo-200 to-transparent dark:from-purple-600 dark:via-indigo-700"></div>
+              <Badge
+                variant="outline"
+                className="text-xs text-purple-600 dark:text-purple-400 border-purple-300 dark:border-purple-600"
+              >
+                {suggestions.length}
+              </Badge>
+            </div>
+
+            {/* Category Suggestions */}
+            <div className="space-y-3">
+              {suggestions.map((suggestion, index) => (
+                <div
+                  key={index}
+                  className="group relative flex items-start space-x-4 p-5 rounded-2xl bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-md hover:shadow-xl border border-purple-100/50 dark:border-purple-800/30 hover:border-purple-200 dark:hover:border-purple-700 hover:scale-[1.02] transform"
+                >
+                  {/* Suggestion icon */}
+                  <div className="flex-shrink-0 mt-0.5">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-indigo-500 to-blue-500 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+                      <Sparkles className="w-5 h-5 text-white" />
                     </div>
                   </div>
-                  {!aiSuggestionsLoading && (
-                    <div className="flex items-center space-x-2">
-                      <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold px-4 py-2 text-sm shadow-lg border-0">
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        {Object.values(aiSuggestions).flat().length}
-                      </Badge>
-                    </div>
-                  )}
+
+                  {/* Suggestion content */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed font-medium">
+                      {suggestion}
+                    </p>
+                  </div>
+
+                  {/* Hover indicator */}
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500"></div>
+                  </div>
                 </div>
-                <div className="max-h-[500px] overflow-y-auto space-y-6 pr-2 scrollbar-thin scrollbar-thumb-purple-300 dark:scrollbar-thumb-purple-700 scrollbar-track-transparent">
-                  {Object.entries(aiSuggestions).map(([category, suggestions]) => (
-                    <div key={category} className="space-y-4">
-                      {/* Category Header */}
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg shadow-md">
-                          <div className="w-3 h-3 rounded-full bg-white"></div>
-                        </div>
-                        <h3 className="font-bold text-lg bg-gradient-to-r from-purple-800 to-indigo-700 dark:from-purple-300 dark:to-indigo-300 bg-clip-text text-transparent">
-                          {category}
-                        </h3>
-                        <div className="flex-1 h-px bg-gradient-to-r from-purple-300 via-indigo-200 to-transparent dark:from-purple-600 dark:via-indigo-700"></div>
-                        <Badge
-                          variant="outline"
-                          className="text-xs text-purple-600 dark:text-purple-400 border-purple-300 dark:border-purple-600"
-                        >
-                          {suggestions.length}
-                        </Badge>
-                      </div>
-
-                      {/* Category Suggestions */}
-                      <div className="space-y-3">
-                        {suggestions.map((suggestion, index) => (
-                          <div
-                            key={index}
-                            className="group relative flex items-start space-x-4 p-5 rounded-2xl bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-md hover:shadow-xl border border-purple-100/50 dark:border-purple-800/30 hover:border-purple-200 dark:hover:border-purple-700 hover:scale-[1.02] transform"
-                          >
-                            {/* Suggestion icon */}
-                            <div className="flex-shrink-0 mt-0.5">
-                              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-indigo-500 to-blue-500 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                                <Sparkles className="w-5 h-5 text-white" />
-                              </div>
-                            </div>
-
-                            {/* Suggestion content */}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed font-medium">
-                                {suggestion}
-                              </p>
-                            </div>
-
-                            {/* Hover indicator */}
-                            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500"></div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              ))}
             </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div> 
+</div>
           </div>
 
           {/* Tasks Section - Full Width */}

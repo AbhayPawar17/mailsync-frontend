@@ -14,13 +14,13 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "High":
-        return "bg-gradient-to-br from-red-50 to-red-100 border-red-300 dark:from-red-950/30 dark:to-red-900/20 dark:border-red-800/50"
+        return "bg-gradient-to-br from-red-50 to-red-100 border-red-300 hover:border-red-500 dark:from-red-950/30 dark:to-red-900/20 dark:border-red-800/50 dark:hover:border-red-600"
       case "Medium":
-        return "bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 dark:from-amber-950/30 dark:to-amber-900/20"
+        return "bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 hover:border-amber-500 dark:from-amber-950/30 dark:to-amber-900/20 dark:hover:border-amber-600"
       case "Low":
-        return "bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200 dark:from-emerald-950/30 dark:to-emerald-900/20"
+        return "bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200 hover:border-emerald-500 dark:from-emerald-950/30 dark:to-emerald-900/20 dark:hover:border-emerald-600"
       default:
-        return "bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200 dark:from-slate-950/30 dark:to-slate-900/20"
+        return "bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200 hover:border-slate-500 dark:from-slate-950/30 dark:to-slate-900/20 dark:hover:border-slate-600"
     }
   }
 

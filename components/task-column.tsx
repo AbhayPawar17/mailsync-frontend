@@ -15,7 +15,7 @@ export function TaskColumn({ column, onTaskClick }: TaskColumnProps) {
     switch (normalizedTitle) {
       case "meeting":
         return {
-          headerBg: "bg-gradient-to-r from-blue-0 to-blue-50",
+          headerBg: "bg-gradient-to-br from-blue-50 via-blue-50 to-blue-0",
           headerBorder: "border-blue-200",
           titleColor: "text-blue-700",
           badgeColor: "bg-blue-100 text-blue-700",
@@ -24,7 +24,7 @@ export function TaskColumn({ column, onTaskClick }: TaskColumnProps) {
         }
       case "work":
         return {
-          headerBg: "bg-gradient-to-r from-purple-0 to-purple-50",
+          headerBg: "bg-gradient-to-br from-purple-50 via-purple-50 to-purple-0",
           headerBorder: "border-purple-200",
           titleColor: "text-purple-700",
           badgeColor: "bg-purple-100 text-purple-700",
@@ -63,7 +63,7 @@ export function TaskColumn({ column, onTaskClick }: TaskColumnProps) {
         }
       default:
         return {
-          headerBg: "bg-gradient-to-r from-slate-50 to-slate-100",
+          headerBg: "bg-gradient-to-br from-slate-50 via-slate-50 to-slate-0",
           headerBorder: "border-slate-200",
           titleColor: "text-slate-700",
           badgeColor: "bg-slate-100 text-slate-700",
