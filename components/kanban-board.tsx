@@ -38,7 +38,7 @@ export function KanbanBoard() {
   const [localSearchQuery, setLocalSearchQuery] = useState("")
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [recentSearches, setRecentSearches] = useState<string[]>([])
-  
+
   const searchContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -48,57 +48,57 @@ export function KanbanBoard() {
       label: "Search meetings",
       icon: <Calendar className="w-4 h-4" />,
       query: "meeting",
-      category: "Quick Search"
+      category: "Quick Search",
     },
     {
       id: "chats",
       label: "Search chats",
       icon: <MessageSquare className="w-4 h-4" />,
       query: "chat",
-      category: "Quick Search"
+      category: "Quick Search",
     },
     {
       id: "emails",
       label: "Search emails",
       icon: <Mail className="w-4 h-4" />,
       query: "email",
-      category: "Quick Search"
+      category: "Quick Search",
     },
     {
       id: "high-priority",
       label: "High priority tasks",
       icon: <AlertCircle className="w-4 h-4" />,
       query: "priority:High",
-      category: "Priority"
+      category: "Priority",
     },
     {
       id: "critical",
       label: "Critical tasks",
       icon: <Star className="w-4 h-4" />,
       query: "priority:Critical",
-      category: "Priority"
+      category: "Priority",
     },
     {
       id: "today",
       label: "Today's tasks",
       icon: <Clock className="w-4 h-4" />,
       query: "today",
-      category: "Time"
+      category: "Time",
     },
     {
       id: "team",
       label: "Team tasks",
       icon: <Users className="w-4 h-4" />,
       query: "team",
-      category: "People"
+      category: "People",
     },
     {
       id: "tagged",
       label: "Tagged items",
       icon: <Tag className="w-4 h-4" />,
       query: "tag:",
-      category: "Organization"
-    }
+      category: "Organization",
+    },
   ]
 
   const selectedTask = selectedTaskId ? tasks.find((task) => task.id === selectedTaskId) : null
@@ -125,9 +125,12 @@ export function KanbanBoard() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     if (localSearchQuery.trim()) {
-      const updatedRecentSearches = [localSearchQuery, ...recentSearches.filter(s => s !== localSearchQuery)].slice(0, 5)
+      const updatedRecentSearches = [localSearchQuery, ...recentSearches.filter((s) => s !== localSearchQuery)].slice(
+        0,
+        5,
+      )
       setRecentSearches(updatedRecentSearches)
-      localStorage.setItem('recentSearches', JSON.stringify(updatedRecentSearches))
+      localStorage.setItem("recentSearches", JSON.stringify(updatedRecentSearches))
     }
     setSearchQuery(localSearchQuery)
     setShowSuggestions(false)
@@ -139,10 +142,13 @@ export function KanbanBoard() {
     setSearchQuery(suggestion.query)
     setShowSuggestions(false)
     await searchTasks(suggestion.query)
-    
-    const updatedRecentSearches = [suggestion.query, ...recentSearches.filter(s => s !== suggestion.query)].slice(0, 5)
+
+    const updatedRecentSearches = [suggestion.query, ...recentSearches.filter((s) => s !== suggestion.query)].slice(
+      0,
+      5,
+    )
     setRecentSearches(updatedRecentSearches)
-    localStorage.setItem('recentSearches', JSON.stringify(updatedRecentSearches))
+    localStorage.setItem("recentSearches", JSON.stringify(updatedRecentSearches))
   }
 
   const handleRecentSearchClick = async (query: string) => {
@@ -172,12 +178,12 @@ export function KanbanBoard() {
   }
 
   useEffect(() => {
-    const stored = localStorage.getItem('recentSearches')
+    const stored = localStorage.getItem("recentSearches")
     if (stored) {
       try {
         setRecentSearches(JSON.parse(stored))
       } catch (e) {
-        console.error('Error loading recent searches:', e)
+        console.error("Error loading recent searches:", e)
       }
     }
   }, [])
@@ -193,8 +199,8 @@ export function KanbanBoard() {
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
   if (loading) {
@@ -202,7 +208,7 @@ export function KanbanBoard() {
       <div className="flex-1 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <Customloader/>
+            <Customloader />
           </div>
         </div>
       </div>
@@ -232,12 +238,12 @@ export function KanbanBoard() {
       {/* Header without z-index */}
       <div className="relative p-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-20">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div ref={searchContainerRef} className="relative w-full sm:w-auto sm:min-w-[320px]">
+          <div ref={searchContainerRef} className="relative w-full sm:w-auto sm:min-w-[480px]">
             <form onSubmit={handleSearch} className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4 z-10" />
               <Input
                 ref={inputRef}
-                placeholder="Search tasks, meetings, chats..."
+                placeholder="Search emails..."
                 value={localSearchQuery}
                 onChange={(e) => setLocalSearchQuery(e.target.value)}
                 onFocus={handleInputFocus}
@@ -262,34 +268,79 @@ export function KanbanBoard() {
 
             {/* Dropdown with high z-index */}
             {showSuggestions && !isSearching && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto backdrop-blur-sm">
-                {recentSearches.length > 0 && (
-                  <div className="p-2 border-b border-slate-100 dark:border-slate-700">
-                    <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 px-2">Recent Searches</h4>
-                    {recentSearches.map((query, index) => (
-                      <button
-                        key={`recent-${index}`}
-                        onClick={() => handleRecentSearchClick(query)}
-                        className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-md transition-colors flex items-center gap-2"
-                      >
-                        <Clock className="w-3 h-3 text-slate-400" />
-                        {query}
-                      </button>
-                    ))}
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl z-50 max-h-96 overflow-hidden backdrop-blur-sm">
+                <div className="flex min-h-[300px]">
+                  {/* Recent Searches Column */}
+                  <div className="w-1/2 border-r border-slate-100 dark:border-slate-700">
+                    <div className="p-4 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-750 border-b border-slate-100 dark:border-slate-700">
+                      <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-slate-500" />
+                        Recent Searches
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Your search history</p>
+                    </div>
+                    <div className="p-2 max-h-64 overflow-y-auto">
+                      {recentSearches.length > 0 ? (
+                        <div className="space-y-1">
+                          {recentSearches.map((query, index) => (
+                            <button
+                              key={`recent-${index}`}
+                              onClick={() => handleRecentSearchClick(query)}
+                              className="w-full text-left px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-950/30 dark:hover:to-blue-900/20 rounded-lg transition-all duration-200 flex items-center gap-3 group"
+                            >
+                              <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
+                                <Clock className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{query}</p>
+                                <p className="text-xs text-slate-400">Search #{index + 1}</p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                          <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-3">
+                            <Search className="w-5 h-5 text-slate-400" />
+                          </div>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">No recent searches</p>
+                          <p className="text-xs text-slate-400 mt-1">Start searching to see history</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-                <div className="p-2">
-                  <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 px-2">Quick Search</h4>
-                  {searchSuggestions.map((suggestion) => (
-                    <button
-                      key={suggestion.id}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-md transition-colors flex items-center gap-3"
-                    >
-                      <span className="text-slate-400">{suggestion.icon}</span>
-                      <span>{suggestion.label}</span>
-                    </button>
-                  ))}
+
+                  {/* Quick Search Column */}
+                  <div className="w-1/2">
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-b border-slate-100 dark:border-slate-700">
+                      <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <Star className="w-4 h-4 text-blue-500" />
+                        Quick Search
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Search suggestions</p>
+                    </div>
+                    <div className="p-2 max-h-64 overflow-y-auto">
+                      <div className="space-y-1">
+                        {searchSuggestions.map((suggestion) => (
+                          <button
+                            key={suggestion.id}
+                            onClick={() => handleSuggestionClick(suggestion)}
+                            className="w-full text-left px-3 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-950/30 dark:hover:to-purple-950/30 rounded-lg transition-all duration-200 flex items-center gap-3 group"
+                          >
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 flex items-center justify-center group-hover:from-indigo-100 group-hover:to-purple-100 dark:group-hover:from-indigo-900/40 dark:group-hover:to-purple-900/40 transition-all">
+                              <span className="text-blue-600 dark:text-blue-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                                {suggestion.icon}
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{suggestion.label}</p>
+                              <p className="text-xs text-slate-400 capitalize">{suggestion.category}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -335,7 +386,7 @@ export function KanbanBoard() {
                   Refreshing...
                 </>
               ) : (
-                <>          
+                <>
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Refresh
                 </>
@@ -366,21 +417,16 @@ export function KanbanBoard() {
       </div>
 
       {/* Task Detail Modal - ensure this has z-[1000] in its implementation */}
-      <TaskDetailModal 
-        task={selectedTask} 
-        isOpen={showTaskDetail} 
-        onClose={closeTaskDetail} 
-      />
+      <TaskDetailModal task={selectedTask} isOpen={showTaskDetail} onClose={closeTaskDetail} />
 
       {/* Debug info */}
-      {process.env.NODE_ENV === 'development' && selectedTask && (
+      {process.env.NODE_ENV === "development" && selectedTask && (
         <div className="fixed bottom-4 right-4 bg-black/80 text-white p-2 rounded text-xs max-w-xs">
           <div>Selected Task ID: {selectedTask.id}</div>
-          <div>Graph ID: {selectedTask.graphId || 'Not available'}</div>
-          <div>Has Graph ID: {selectedTask.graphId ? '✅' : '❌'}</div>
+          <div>Graph ID: {selectedTask.graphId || "Not available"}</div>
+          <div>Has Graph ID: {selectedTask.graphId ? "✅" : "❌"}</div>
         </div>
       )}
     </div>
   )
 }
-
