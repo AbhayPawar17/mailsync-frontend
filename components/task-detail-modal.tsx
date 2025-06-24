@@ -2,13 +2,13 @@
 
 import {
   X,
-  CheckCircle,
   Edit,
   MessageSquare,
   Paperclip,
   Loader2,
   Combine,
   PlusCircle,
+  MailOpen,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -305,7 +305,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4 sm:p-6">
-      <div className="bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 rounded-3xl shadow-2xl w-full max-w-[95vw] sm:max-w-xl md:max-w-2xl lg:max-w-4xl h-[95vh] flex flex-col overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
+      <div className="bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 rounded-xl shadow-2xl w-full max-w-[95vw] sm:max-w-xl md:max-w-2xl lg:max-w-4xl h-[95vh] flex flex-col overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
         
         {/* Header - fixed */}
         <div className="relative overflow-hidden shrink-0">
@@ -313,10 +313,10 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
           <div className="relative flex items-center justify-between p-4 sm:p-6 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-r from-slate-50/80 to-white/80 dark:from-slate-900/80 dark:to-slate-800/80 backdrop-blur-sm">
             <div className="flex items-center space-x-4">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
-                <CheckCircle className="w-5 h-5 text-white" />
+                <MailOpen className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Email Details</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{task?.title}</h2>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -347,11 +347,8 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
         </div>
 
         {/* Content - scrollable */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="p-4 sm:p-6 space-y-6">
-            <div className="space-y-2">
-              <h5 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{task.title}</h5>
-            </div>
 
             {/* Description */}
             <div className="space-y-3">
@@ -474,7 +471,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
                 </div>
               )}
               
-              <div className="border border-slate-300 dark:border-slate-700 dark:bg-slate-800 rounded-xl p-3 min-h-[250px] max-h-[50vh] overflow-y-auto">
+              <div className="border border-slate-300 dark:border-slate-700 dark:bg-slate-800 rounded-xl p-3 min-h-[330px] max-h-[50vh] overflow-y-auto">
                 {isEditing ? (
                   <div className="space-y-2 h-full flex flex-col">
                     <Textarea
