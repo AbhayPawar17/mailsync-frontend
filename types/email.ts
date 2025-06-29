@@ -1,61 +1,57 @@
-export interface Email {
-  id: number
-  sender: string
-  avatar: string
-  subject: string
-  preview: string
-  time: string
-  sentimental? : string
-  category: string
-  categoryColor: string
-  categoryTextColor: string
-  categoryBorderColor: string
-  hasAttachments: boolean
-  isStarred: boolean
-  isRead: boolean
-  priority: "urgent" | "high" | "medium" | "low"
-  fullContent?: string
-  attachments?: EmailAttachment[]
-  recipients?: EmailRecipient[]
-  timestamp?: string
-  labels?: string[]
-}
+export type EmailFolder = "Top Urgent" | "Work" | "Meeting" | "Others"
 
-export interface EmailAttachment {
-  id: string
+export interface Attachment {
   name: string
   size: string
   type: string
-  url?: string
+  url: string
 }
 
-export interface EmailRecipient {
+export interface EmailSender {
+  name: string
   email: string
-  name: string
-  type: "to" | "cc" | "bcc"
+  avatar?: string
+  organization?: {
+    name: string
+    logo?: string
+  }
 }
 
-export interface EmailCategory {
-  name: string
-  count: number
-  color: string
-  textColor: string
-  borderColor: string
-  icon: string
+export interface Email {
+  id: number
+  user_id: number
+  category: "Top Urgent" | "Work" | "Meeting" | "Others"
+  title: string
+  sentimental: string
+  from_name: string
+  from_email: string
+  tags: string
+  created_at: string
+  description: string
+  due_at: string
+  action_link: string
+  priority: "High" | "Medium" | "Low"
+  azure_importance: string
+  graph_id: string
+  task_completed: string
+  type: string
+  read?: boolean
+  flagged?: boolean
+  attachments?: Attachment[]
+  body?: {
+    contentType: string
+    content: string
+  }
+  sender?: {
+    emailAddress: {
+      name: string
+      address: string
+    }
+  }
+  toRecipients?: Array<{
+    emailAddress: {
+      name: string
+      address: string
+    }
+  }>
 }
-
-export interface SidebarItem {
-  icon: any
-  label: string
-  active: boolean
-  count?: number | null
-}
-
-export interface FolderItem {
-  icon: any
-  label: string
-  count?: number | null
-}
-
-export type LayoutType = "grid" | "list" | "split" | "compact"
-export type ViewDensity = "comfortable" | "compact" | "spacious"

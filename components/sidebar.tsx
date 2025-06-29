@@ -1,234 +1,81 @@
 "use client"
 
-import { Columns, LogOut, Zap, Menu, X } from "lucide-react"
+import { useState } from "react"
+import { AlertCircle, Menu, X, Briefcase, Calendar, Mail, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { getSidebarItems, folderItems } from "@/data/email-data"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import Cookies from "js-cookie"
-import { toast } from "sonner"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import type { EmailFolder } from "@/types/email"
+import { useMobile } from "@/hooks/use-mobile"
+import ComposeEmail from "@/components/compose-email"
 
 interface SidebarProps {
-  sidebarCollapsed: boolean
-  setSidebarCollapsed: (collapsed: boolean) => void
-  currentPage: string
-  setCurrentPage: (page: "dashboard" | "email" | "insights") => void
+  selectedFolder: EmailFolder
+  onSelectFolder: (folder: EmailFolder) => void
+  onToggleSidebar: () => void
+  onSendEmail?: (email: any) => void
 }
 
-const BASE_URI = process.env.NEXT_PUBLIC_BASE_URI;
+export default function Sidebar({ selectedFolder, onSelectFolder, onToggleSidebar, onSendEmail }: SidebarProps) {
+  const [composeOpen, setComposeOpen] = useState(false)
+  const isMobile = useMobile()
 
-export function Sidebar({ sidebarCollapsed, setSidebarCollapsed, currentPage, setCurrentPage }: SidebarProps) {
-  const isMobile = useIsMobile()
-  const router = useRouter()
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-
-  // Auto-collapse sidebar on mobile, but don't force it
-  useEffect(() => {
-    if (isMobile && !sidebarCollapsed) {
-      // Only auto-collapse on initial mobile load, not on every resize
-      const hasAutoCollapsed = sessionStorage.getItem("sidebar-auto-collapsed")
-      if (!hasAutoCollapsed) {
-        setSidebarCollapsed(true)
-        sessionStorage.setItem("sidebar-auto-collapsed", "true")
-      }
-    }
-  }, [isMobile, sidebarCollapsed, setSidebarCollapsed])
-
-  const handleLogout = async () => {
-    setIsLoggingOut(true)
-    try {
-      const authToken = Cookies.get('authToken')
-      if (!authToken) {
-        toast.error('No authentication token found')
-        setIsLoggingOut(false)
-        return
-      }
-
-      const response = await fetch(`${BASE_URI}/logout`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
-        }
-      })
-
-      if (response.ok) {
-        // Remove cookie and redirect
-        Cookies.remove('authToken')
-        toast.success('Logged out successfully')
-        router.push('/')
-      } else {
-        const errorData = await response.json()
-        toast.error(errorData.message || 'Logout failed')
-        setIsLoggingOut(false)
-      }
-    } catch (error) {
-      console.error('Logout error:', error)
-      toast.error('An error occurred during logout')
-      setIsLoggingOut(false)
-    }
-  }
+  const folderItems = [
+    { id: "Top Urgent", label: "High Priority", icon: AlertCircle },
+    { id: "Work", label: "Work", icon: Briefcase },
+    { id: "Meeting", label: "Meeting", icon: Calendar },
+    { id: "Others", label: "Others", icon: Mail },
+  ]
 
   return (
-    <>
-      {/* Mobile Menu Button */}
-      {isMobile && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className="fixed top-4 left-4 z-[60] md:hidden bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-lg"
-        >
-          {sidebarCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
-        </Button>
-      )}
-
-      {/* Hide sidebar completely on mobile when collapsed */}
-      {isMobile && sidebarCollapsed && <div className="w-0" />}
-
-      {/* Sidebar */}
-      <div
-        className={`${
-          isMobile
-            ? sidebarCollapsed
-              ? "hidden"
-              : "fixed left-0 top-0 h-full z-50 w-64"
-            : `${sidebarCollapsed ? "w-16" : "w-64"} relative`
-        } bg-gradient-to-b from-slate-800 to-slate-900 dark:from-gray-900 dark:to-slate-900 border-r border-slate-700 dark:border-gray-800 flex flex-col transition-all duration-500 ease-in-out`}
-      >
-        {/* Professional Logo */}
-        <div className={`border-b border-slate-700 dark:border-gray-800 ${sidebarCollapsed ? "px-3 py-4" : "p-6"}`}>
-          <div className={`flex items-center space-x-2 ${sidebarCollapsed ? "justify-start" : ""}`}>
-            <div className="relative">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 rounded-lg flex items-center justify-center transition-all duration-300 hover:shadow-lg">
-                <Zap className="w-5 h-5 text-white" />
-              </div>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full opacity-80"></div>
-            </div>
-            {!sidebarCollapsed && (
-              <div className="flex items-center space-x-2 transition-all duration-300 ease-in-out">
-                <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  EmailSync 
-                </span>
-                <Badge
-                  variant="secondary"
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs"
-                >
-                  AI
-                </Badge>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Collapse Toggle - Desktop Only */}
-        {!isMobile && (
-          <div className="px-4 py-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="w-full text-slate-300 hover:text-white hover:bg-slate-700 dark:hover:bg-gray-800 transition-all duration-200"
-            >
-              <Columns className="w-4 h-4" />
-              {!sidebarCollapsed && <span className="ml-2">Collapse</span>}
-            </Button>
-          </div>
-        )}
-
-        {/* Main Navigation */}
-        <div className="p-4">
-          {!sidebarCollapsed && (
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 transition-all duration-300">
-              MAIN
-            </div>
-          )}
-          <nav className="space-y-1">
-            {getSidebarItems(currentPage)
-              .filter((item) => item.label.toLowerCase() !== "tasks")
-              .map((item, index) => (
-                <Button
-                  key={item.label}
-                  variant={item.active ? "default" : "ghost"}
-                  onClick={() => setCurrentPage(item.label.toLowerCase() as "dashboard" | "email" | "insights")}
-                  className={`w-full cursor-pointer ${sidebarCollapsed ? "justify-center" : "justify-start"} ${
-                    item.active
-                      ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
-                      : "text-slate-300 hover:text-white hover:bg-slate-700 dark:hover:bg-gray-800"
-                  } transition-all duration-300 hover:scale-105 transform`}
-                  style={{
-                    transitionDelay: `${index * 50}ms`,
-                  }}
-                >
-                  <item.icon className="w-4 h-4" />
-                  {!sidebarCollapsed && (
-                    <>
-                      <span className="ml-3">{item.label}</span>
-                    </>
-                  )}
-                </Button>
-              ))}
-          </nav>
-        </div>
-
-        {/* Folders */}
-        <div className="p-4 flex-1">
-          <nav className="space-y-1">
-            {folderItems.map((item, index) => (
-              <Button
-                key={item.label}
-                variant="ghost"
-                className={`w-full cursor-pointer ${
-                  sidebarCollapsed ? "justify-center" : "justify-between"
-                } text-slate-300 hover:text-white hover:bg-slate-700 dark:hover:bg-gray-800 transition-all duration-300 hover:scale-105 transform`}
-                style={{
-                  transitionDelay: `${(index + 4) * 50}ms`,
-                }}
-              >
-                <div className="flex items-center">
-                  <item.icon className="w-4 h-4" />
-                  {!sidebarCollapsed && <span className="ml-3">{item.label}</span>}
-                </div>
-              </Button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Logout Button */}
-        <div className="p-4 border-t border-slate-700 dark:border-gray-800">
-          <Button
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className={`w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 transition-all duration-300 hover:scale-105 transform hover:shadow-lg cursor-pointer ${
-              sidebarCollapsed ? "justify-center px-2" : ""
-            }`}
-          >
-            {isLoggingOut ? (
-              <div className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                {!sidebarCollapsed && <span>
-                    Logging out...
-                  </span>}
-              </div>
-            ) : (
-              <>
-                <LogOut className="w-4 h-4" />
-                {!sidebarCollapsed && <span className="ml-2">Logout</span>}
-              </>
-            )}
+    <div className="h-full flex flex-col bg-background/60 backdrop-blur-md w-64">
+      <div className="p-4 flex items-center justify-between border-b border-border/50">
+        <h1 className="text-xl font-semibold">MailSync AI</h1>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={onToggleSidebar}>
+            {isMobile ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
       </div>
 
-      {/* Mobile Overlay */}
-      {isMobile && !sidebarCollapsed && (
-        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setSidebarCollapsed(true)} />
-      )}
-    </>
+      <ScrollArea className="flex-1">
+        <div className="p-2">
+          {/* <Button variant="default" className="w-full justify-start mb-2" onClick={() => setComposeOpen(true)}>
+            <PenSquare className="mr-2 h-4 w-4" />
+            Compose
+          </Button> */}
+
+          {/* Main folders */}
+          <div className="space-y-1 mb-4">
+            {folderItems.map((item) => {
+              const Icon = item.icon
+              const isSelected = selectedFolder === item.id
+              return (
+                <button
+                  key={item.id}
+                  className={`flex items-center w-full px-4 py-2 text-sm rounded-md transition-colors cursor-pointer ${
+                    isSelected
+                      ? "bg-black text-white hover:bg-gray-800"
+                      : "hover:bg-accent hover:text-accent-foreground"
+                  }`}
+                  onClick={() => onSelectFolder(item.id as EmailFolder)}
+                >
+                  <Icon className="mr-2 h-4 w-4" />
+                  {item.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </ScrollArea>
+
+      <div className="p-4 border-t border-border/50 flex justify-between items-center">
+        <Button variant="ghost" size="icon">
+          <Settings className="h-5 w-5" />
+        </Button>
+      </div>
+
+      {/* Compose Email Modal */}
+      <ComposeEmail open={composeOpen} onClose={() => setComposeOpen(false)} onSend={onSendEmail} />
+    </div>
   )
 }

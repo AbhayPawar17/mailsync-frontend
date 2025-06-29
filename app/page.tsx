@@ -1,25 +1,5 @@
-"use client"
+import { redirect } from "next/navigation"
 
-import { usePathname } from "next/navigation"
-import AIEmailLandingPage from "./landing-page/page"
-import TaskManagementApp from "./dashboard/page"
-import SyncMail from "./sync-mail/page";
-
-export default function App() {
-
-    const pathname = usePathname();
-
-  return (
-    <>
-    {pathname === "/" && (
-      <AIEmailLandingPage/> )}
-
-    {pathname === "/dashboard" && ( 
-      <TaskManagementApp/>)}
-
-    {pathname === "/sync-mail" && (
-      <SyncMail/>
-    )}
-    </>
-  )
+export default function Home() {
+  redirect("/dashboard")
 }
