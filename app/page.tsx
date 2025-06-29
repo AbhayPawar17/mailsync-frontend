@@ -1,3 +1,5 @@
+"use client"
+
 import { usePathname } from "next/navigation"
 import AIEmailLandingPage from "./landing-page/page"
 import SyncMail from "./sync-mail/page";
