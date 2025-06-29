@@ -1,14 +1,23 @@
 import type { Email } from "@/types/email"
+import Cookies from "js-cookie"
 
 const API_BASE_URL = "https://mailsync.l4it.net/api"
-const AUTH_TOKEN = "313|xZDZqeD8tsL57nIXv7iidxna6x0G8LJ2r2sEyIaa5f8b4448"
+
+const getToken = (): string => {
+  const token = Cookies.get("authToken")
+  if (!token) {
+    throw new Error("Authentication token not found in cookies")
+  }
+  return token
+}
 
 export async function fetchAllMessages(): Promise<Email[]> {
   try {
+    const token = getToken()
     const response = await fetch(`${API_BASE_URL}/allmessages`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${AUTH_TOKEN}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     })
@@ -36,13 +45,14 @@ export async function fetchAllMessages(): Promise<Email[]> {
 
 export async function fetchMessageDetail(graphId: string): Promise<any> {
   try {
+    const token = getToken()
     const formData = new FormData()
     formData.append("graph_id", graphId)
 
     const response = await fetch(`${API_BASE_URL}/view_message`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${AUTH_TOKEN}`,
+        Authorization: `Bearer ${token}`,
       },
       body: formData,
     })
@@ -66,13 +76,14 @@ export async function fetchMessageDetail(graphId: string): Promise<any> {
 
 export async function fetchSmartReplies(graphId: string): Promise<string[]> {
   try {
+    const token = getToken()
     const formData = new FormData()
     formData.append("graph_id", graphId)
 
     const response = await fetch(`${API_BASE_URL}/smart_reply`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${AUTH_TOKEN}`,
+        Authorization: `Bearer ${token}`,
       },
       body: formData,
     })
@@ -102,6 +113,7 @@ export async function fetchSmartReplies(graphId: string): Promise<string[]> {
 
 export async function sendSmartReply(graphId: string, replyMessage: string): Promise<boolean> {
   try {
+    const token = getToken()
     const formData = new FormData()
     formData.append("graph_id", graphId)
     formData.append("reply_message", replyMessage)
@@ -109,7 +121,7 @@ export async function sendSmartReply(graphId: string, replyMessage: string): Pro
     const response = await fetch(`${API_BASE_URL}/reply`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${AUTH_TOKEN}`,
+        Authorization: `Bearer ${token}`,
       },
       body: formData,
     })
@@ -128,10 +140,11 @@ export async function sendSmartReply(graphId: string, replyMessage: string): Pro
 
 export async function updateMail(): Promise<boolean> {
   try {
+    const token = getToken()
     const response = await fetch(`${API_BASE_URL}/update_mail`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${AUTH_TOKEN}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     })
@@ -150,10 +163,11 @@ export async function updateMail(): Promise<boolean> {
 
 export async function searchEmails(query: string): Promise<Email[]> {
   try {
+    const token = getToken()
     const response = await fetch(`${API_BASE_URL}/search`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${AUTH_TOKEN}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
