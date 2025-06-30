@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
 import { fetchAllMessages, fetchMessageDetail } from "@/lib/api"
 import { Button } from "@/components/ui/button"
-import { Calendar, Mail, RefreshCw } from "lucide-react"
+import { Calendar, Mail, MailIcon, RefreshCw } from "lucide-react"
 
 export default function EmailClient() {
   const [selectedFolder, setSelectedFolder] = useState<EmailFolder>("Top Urgent")
@@ -326,7 +326,7 @@ export default function EmailClient() {
                   <div className="flex h-full items-center justify-center">
                     <div className="text-center">
                       <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">
-                        <Calendar className="w-12 h-12 text-blue-500" />
+                        <MailIcon className="w-12 h-12 text-blue-500" />
                       </div>
                       <p className="text-slate-600 text-lg font-medium">Select an email to view</p>
                       <p className="text-slate-400 text-sm mt-1">Choose an email from the list to see its details</p>
