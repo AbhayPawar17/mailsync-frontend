@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Reply, Download, Forward } from "lucide-react"
+import { ArrowLeft, Reply, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import type { Email } from "@/types/email"
@@ -183,23 +183,17 @@ export default function EmailDetail({ email, onClose }: EmailDetailProps) {
       </ScrollArea>
 
       {/* Action Bar */}
-      <div className="p-4 border-t border-white/20 bg-gradient-to-r from-white/90 to-white/70 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <Button
-            className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl"
+        <div className="p-4 border-t border-white/20 bg-gradient-to-r from-white/90 to-white/70 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <Button
+            className="flex-1 bg-[#5C85FF] hover:bg-[#4A74FF] text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl cursor-pointer"
             onClick={() => setReplyOpen(true)}
-          >
+            >
             <Reply className="mr-2 h-4 w-4" />
             Smart AI Reply
-          </Button>
-          <Button
-            variant="outline"
-            className="bg-white/80 hover:bg-white/90 border-white/40 rounded-xl transition-all duration-200"
-          >
-            <Forward className="h-4 w-4" />
-          </Button>
+            </Button>
+          </div>
         </div>
-      </div>
 
       {/* Reply Modal */}
       <ComposeEmail

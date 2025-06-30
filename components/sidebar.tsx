@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { AlertCircle, X, Briefcase, Calendar, Mail, LogOut, Sparkles, ChevronRight, ChevronLeft } from "lucide-react"
+import { AlertCircle, X, Briefcase, Calendar, Mail, LogOut, ChevronRight, ChevronLeft, MailCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { motion, AnimatePresence } from "framer-motion"
@@ -102,7 +102,7 @@ export default function Sidebar({ selectedFolder, onSelectFolder, onToggleSideba
     return (
       <div className="flex items-center space-x-3">
         <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-          <Sparkles className="w-5 h-5 text-white" />
+          <MailCheck className="w-5 h-5 text-white" />
         </div>
         <AnimatePresence mode="wait">
           {!isCollapsed && (
@@ -268,7 +268,7 @@ export default function Sidebar({ selectedFolder, onSelectFolder, onToggleSideba
             onClick={handleLogout}
             disabled={isLoggingOut}
             className={cn(
-              "w-full bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black dark:from-gray-100 dark:to-gray-200 dark:hover:from-gray-200 dark:hover:to-white text-white dark:text-gray-900 border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] font-medium group relative overflow-hidden cursor-pointer",
+              "w-full bg-gradient-to-br from-blue-600 to-purple-600 text-white dark:text-gray-900 border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] font-medium group relative overflow-hidden cursor-pointer",
               isCollapsed ? "rounded-xl py-2 px-2" : "rounded-2xl py-3.5"
             )}
           >

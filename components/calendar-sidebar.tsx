@@ -204,7 +204,7 @@ export default function CalendarSidebar({ isOpen, onClose, emails = [] }: Calend
         {email.action_link && email.action_link !== "NA" && (
           <Button
             size="sm"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-1 h-auto"
+            className="w-full bg-[#5C85FF] hover:bg-[#4A74FF] text-white text-xs py-1 h-auto"
             onClick={() => handleJoinMeeting(email.action_link)}
           >
             <Video className="w-2.5 h-2.5 mr-1" />
