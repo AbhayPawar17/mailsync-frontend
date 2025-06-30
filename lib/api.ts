@@ -113,10 +113,10 @@ export async function fetchSmartReplies(graphId: string): Promise<string[]> {
 
 export async function sendSmartReply(graphId: string, replyMessage: string): Promise<boolean> {
   try {
-    const token = getToken()
-    const formData = new FormData()
-    formData.append("graph_id", graphId)
-    formData.append("reply_message", replyMessage)
+    const token = getToken();
+    const formData = new FormData();
+    formData.append("graph_id", graphId);
+    formData.append("reply_message", replyMessage);
 
     const response = await fetch(`${API_BASE_URL}/reply`, {
       method: "POST",
@@ -124,17 +124,28 @@ export async function sendSmartReply(graphId: string, replyMessage: string): Pro
         Authorization: `Bearer ${token}`,
       },
       body: formData,
-    })
+    });
 
     if (!response.ok) {
-      throw new Error("Failed to send reply")
+      throw new Error("Failed to send reply");
     }
 
-    const data: { status: boolean } = await response.json()
-    return data.status || false
+    const data = await response.json();
+    
+    // Check both possible response formats:
+    // 1. The nested format you showed: { message: { status: boolean, message: string } }
+    // 2. Direct status format for backward compatibility
+    if (data.message?.status !== undefined) {
+      return data.message.status;
+    } else if (data.status !== undefined) {
+      return data.status;
+    }
+    
+    // If neither format is found, assume failure
+    return false;
   } catch (error) {
-    console.error("Error sending smart reply:", error)
-    return false
+    console.error("Error sending smart reply:", error);
+    return false;
   }
 }
 
