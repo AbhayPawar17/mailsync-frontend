@@ -442,30 +442,35 @@ function EmailListItem({
         }}
       />
 
-      <div className="flex-1 min-w-0">
-        {/* Combined subject and sender name on one line */}
-        <div className="flex justify-between items-center mb-1">
-          <div className="truncate text-sm text-slate-700">
-            <span className="font-medium">{email.title}</span>
-            <span className="text-slate-500 ml-1">from {email.from_name}</span>
-          </div>
-          <div className="text-xs text-slate-400 whitespace-nowrap ml-2">
-            {formatDistanceToNow(new Date(email.created_at))}
-          </div>
-        </div>
 
-        {/* Preview of email content */}
-        <div className="text-xs text-slate-500 truncate mb-2">{email.description}</div>
-
-        {/* Badges for email categories */}
-        <div className="flex flex-wrap gap-1.5">
-          {getBadges().map((badge, index) => (
-            <Badge key={index} className={`text-xs px-2 py-0.5 rounded-full ${badge.className}`}>
-              {badge.label}
-            </Badge>
-          ))}
-        </div>
+<div className="flex-1 min-w-0">
+  {/* Combined subject and sender name - responsive layout */}
+  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 mb-1">
+    <div className="min-w-0 flex-1">
+      <div className="text-sm text-slate-700 break-words">
+        <span className="font-medium">{email.title}</span>
+        <span className="text-slate-500 ml-1">from {email.from_name}</span>
       </div>
+    </div>
+    <div className="text-xs text-slate-400 whitespace-nowrap flex-shrink-0">
+      {formatDistanceToNow(new Date(email.created_at))}
+    </div>
+  </div>
+
+  {/* Preview of email content - responsive wrapping */}
+  <div className="text-xs text-slate-500 break-words mb-2">
+    {email.description}
+  </div>
+
+  {/* Badges for email categories - responsive wrapping */}
+  <div className="flex flex-wrap gap-1.5">
+    {getBadges().map((badge, index) => (
+      <Badge key={index} className={`text-xs px-2 py-0.5 rounded-full ${badge.className}`}>
+        {badge.label}
+      </Badge>
+    ))}
+  </div>
+</div>
 
       {/* Action buttons - positioned absolutely to not affect row height */}
       {isHovered && (
