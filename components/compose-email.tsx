@@ -16,7 +16,6 @@ import {
   Sparkles,
   Plus,
   Send,
-  Wand2,
   RefreshCw,
   Edit3,
 } from "lucide-react"
@@ -506,10 +505,6 @@ export default function ComposeEmail({ open, onClose, onSend, replyTo }: Compose
                               AI-powered responses tailored to your conversation context
                             </p>
                           </div>
-                          <Badge className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 border-blue-200 hover:from-blue-200 hover:to-purple-200">
-                            <Wand2 className="h-3 w-3 mr-1.5" />
-                            AI Generated
-                          </Badge>
                         </div>
 
                         <div className="flex items-center gap-2">

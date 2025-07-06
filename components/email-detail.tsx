@@ -183,17 +183,16 @@ export default function EmailDetail({ email, onClose }: EmailDetailProps) {
       </ScrollArea>
 
       {/* Action Bar */}
-        <div className="p-4 border-t border-white/20 bg-gradient-to-r from-white/90 to-white/70 backdrop-blur-sm">
-          <div className="flex items-center gap-3">
-            <Button
-            className="flex-1 bg-[#5C85FF] hover:bg-[#4A74FF] text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl cursor-pointer"
-            onClick={() => setReplyOpen(true)}
-            >
-            <Reply className="mr-2 h-4 w-4" />
-            Smart AI Reply
-            </Button>
-          </div>
-        </div>
+<div className="p-4 border-t border-white/20 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 backdrop-blur-sm">
+  <div className="flex items-center gap-3">
+    <Button className="flex-1 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl cursor-pointer transform hover:scale-105 hover:shadow-purple-500/25 border border-white/20"
+    onClick={() => setReplyOpen(true)}
+    >
+      <Reply className="mr-2 h-4 w-4" />
+      Smart AI Reply
+    </Button>
+  </div>
+</div>
 
       {/* Reply Modal */}
       <ComposeEmail
