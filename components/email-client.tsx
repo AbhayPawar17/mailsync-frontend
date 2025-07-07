@@ -28,6 +28,12 @@ export default function EmailClient() {
 
   // Filter emails based on selected folder
   const filteredEmails = useMemo(() => {
+    // If "All" is selected, show all emails from all categories
+    if (selectedFolder === "All") {
+      return emails
+    }
+    
+    // Otherwise, filter by the specific category
     return emails.filter((email) => email.category === selectedFolder)
   }, [emails, selectedFolder])
 

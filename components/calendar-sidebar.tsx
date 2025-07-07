@@ -174,41 +174,47 @@ export default function CalendarSidebar({ isOpen, onClose, emails = [] }: Calend
   }
 
   const MeetingCard = ({ email }: { email: Email }) => (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-md p-2 mb-2 hover:shadow-sm transition-shadow">
-      <div className="flex items-start justify-between mb-1">
-        <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-          <h4 className="font-medium text-xs text-gray-900 truncate">{email.title}</h4>
+    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded p-1.5 mb-1.5 hover:shadow-sm transition-shadow">
+      {/* Header with title and priority - responsive wrap */}
+      <div className="flex items-start gap-1 mb-1">
+        <div className="flex items-center gap-1 min-w-0 flex-1">
+          <div className="w-1 h-1 bg-blue-500 rounded-full flex-shrink-0"></div>
+          <h4 className="font-medium text-xs text-gray-900 break-words leading-tight">{email.title}</h4>
         </div>
-        <Badge className={`text-xs px-1.5 py-0 ${getPriorityColor(email.priority)}`}>{email.priority}</Badge>
+        <Badge className={`text-xs px-1 py-0 flex-shrink-0 ${getPriorityColor(email.priority)}`}>{email.priority}</Badge>
       </div>
 
-      <div className="space-y-1">
-        <div className="flex items-center gap-1.5 text-xs text-gray-600">
-          <Clock className="w-2.5 h-2.5" />
-          <span>{formatTime(email.created_at)}</span>
+      {/* Meeting details - responsive stack */}
+      <div className="space-y-0.5">
+        {/* Time and organizer in a responsive grid */}
+        <div className="grid grid-cols-1 gap-0.5">
+          <div className="flex items-center gap-1 text-xs text-gray-600">
+            <Clock className="w-2 h-2 flex-shrink-0" />
+            <span className="break-words">{formatTime(email.created_at)}</span>
+          </div>
+          <div className="flex items-center gap-1 text-xs text-gray-600">
+            <Users className="w-2 h-2 flex-shrink-0" />
+            <span className="break-words">{email.from_name}</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs text-gray-600">
-          <Users className="w-2.5 h-2.5" />
-          <span className="truncate">{email.from_name}</span>
-        </div>
-
+        {/* Due date - full width */}
         {email.due_at && email.due_at !== "NA" && (
-          <div className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">
-            <CalendarIcon className="w-2.5 h-2.5" />
-            <span>Due: {new Date(email.due_at).toLocaleDateString()}</span>
+          <div className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-1 py-0.5 rounded flex-wrap">
+            <CalendarIcon className="w-2 h-2 flex-shrink-0" />
+            <span className="break-words">Due: {new Date(email.due_at).toLocaleDateString()}</span>
           </div>
         )}
 
+        {/* Join button - full width */}
         {email.action_link && email.action_link !== "NA" && (
           <Button
             size="sm"
-            className="w-full bg-[#5C85FF] hover:bg-[#4A74FF] text-white text-xs py-1 h-auto"
+            className="w-full bg-[#5C85FF] hover:bg-[#4A74FF] text-white text-xs py-0.5 h-auto mt-1 flex items-center justify-center gap-1"
             onClick={() => handleJoinMeeting(email.action_link)}
           >
-            <Video className="w-2.5 h-2.5 mr-1" />
-            Join
+            <Video className="w-2 h-2 flex-shrink-0" />
+            <span>Join</span>
           </Button>
         )}
       </div>
@@ -232,8 +238,8 @@ export default function CalendarSidebar({ isOpen, onClose, emails = [] }: Calend
         </Button>
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="p-2">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="p-2 flex-shrink-0">
           {/* Calendar Navigation */}
           <div className="flex items-center justify-between mb-2">
             <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => navigateMonth("prev")}>
@@ -277,11 +283,13 @@ export default function CalendarSidebar({ isOpen, onClose, emails = [] }: Calend
           </div>
 
           <Separator className="my-2" />
+        </div>
 
-          {/* This Week's Meetings - Only category "Meeting" with action_link or due_at */}
-          {thisWeekMeetings.length > 0 && (
-            <div className="mb-4">
-              <div className="flex items-center gap-1.5 mb-2">
+        {/* This Week's Meetings - Constrained height with scroll */}
+        <div className="flex-1 overflow-hidden px-2 pb-2">
+          {thisWeekMeetings.length > 0 ? (
+            <div className="h-full flex flex-col">
+              <div className="flex items-center gap-1.5 mb-2 flex-shrink-0">
                 <Video className="w-3 h-3 text-blue-500" />
                 <h4 className="text-xs font-semibold text-gray-900">This Week</h4>
                 <Badge variant="secondary" className="text-xs px-1 py-0">
@@ -289,55 +297,57 @@ export default function CalendarSidebar({ isOpen, onClose, emails = [] }: Calend
                 </Badge>
               </div>
 
-              {/* Today's Meetings */}
-              {meetingGroups.today.length > 0 && (
-                <div className="mb-4">
-                  <h5 className="text-xs font-medium text-gray-700 mb-1 flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                    Today
-                  </h5>
-                  {meetingGroups.today.map((email) => (
-                    <MeetingCard key={email.id} email={email} />
-                  ))}
-                </div>
-              )}
+              <ScrollArea className="flex-1">
+                <div className="pr-2">
+                  {/* Today's Meetings */}
+                  {meetingGroups.today.length > 0 && (
+                    <div className="mb-4">
+                      <h5 className="text-xs font-medium text-gray-700 mb-1 flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                        Today
+                      </h5>
+                      {meetingGroups.today.map((email) => (
+                        <MeetingCard key={email.id} email={email} />
+                      ))}
+                    </div>
+                  )}
 
-              {/* Tomorrow's Meetings */}
-              {meetingGroups.tomorrow.length > 0 && (
-                <div className="mb-4">
-                  <h5 className="text-xs font-medium text-gray-700 mb-1 flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                    Tomorrow
-                  </h5>
-                  {meetingGroups.tomorrow.map((email) => (
-                    <MeetingCard key={email.id} email={email} />
-                  ))}
-                </div>
-              )}
+                  {/* Tomorrow's Meetings */}
+                  {meetingGroups.tomorrow.length > 0 && (
+                    <div className="mb-4">
+                      <h5 className="text-xs font-medium text-gray-700 mb-1 flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                        Tomorrow
+                      </h5>
+                      {meetingGroups.tomorrow.map((email) => (
+                        <MeetingCard key={email.id} email={email} />
+                      ))}
+                    </div>
+                  )}
 
-              {/* Rest of This Week */}
-              {meetingGroups.thisWeek.length > 0 && (
-                <div className="mb-4">
-                  <h5 className="text-xs font-medium text-gray-700 mb-1 flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
-                    This Week
-                  </h5>
-                  {meetingGroups.thisWeek.map((email) => (
-                    <MeetingCard key={email.id} email={email} />
-                  ))}
+                  {/* Rest of This Week */}
+                  {meetingGroups.thisWeek.length > 0 && (
+                    <div className="mb-4">
+                      <h5 className="text-xs font-medium text-gray-700 mb-1 flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+                        This Week
+                      </h5>
+                      {meetingGroups.thisWeek.map((email) => (
+                        <MeetingCard key={email.id} email={email} />
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+              </ScrollArea>
             </div>
-          )}
-
-          {thisWeekMeetings.length === 0 && (
+          ) : (
             <div className="text-center py-4 text-xs text-gray-500 bg-gray-50 rounded-md border-2 border-dashed border-gray-200">
               <CalendarIcon className="w-4 h-4 mx-auto mb-1 text-gray-400" />
               <p>No meetings this week</p>
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   )
 }

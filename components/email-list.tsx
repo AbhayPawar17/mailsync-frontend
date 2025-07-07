@@ -3,11 +3,9 @@
 import type React from "react"
 import { toast } from "sonner"
 import { useState, useRef, useEffect } from "react"
-import { Archive, Trash2, Clock, Menu, Search, X, Sparkles, Mail } from "lucide-react"
+import { Menu, Search, X, Sparkles, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
 import type { Email, EmailFolder } from "@/types/email"
 import { formatDistanceToNow } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -339,9 +337,6 @@ function EmailListItem({
   isSelected,
   selectedFolder,
   onSelect,
-  onArchive,
-  onDelete,
-  onSnooze,
 }: EmailListItemProps) {
   const [isHovered, setIsHovered] = useState(false)
   const itemRef = useRef<HTMLDivElement>(null)
@@ -471,96 +466,6 @@ function EmailListItem({
     ))}
   </div>
 </div>
-
-      {/* Action buttons - positioned absolutely to not affect row height */}
-      {isHovered && (
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1 bg-white/90 backdrop-blur-md px-2 py-1 rounded-xl shadow-lg border border-white/40">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-            onClick={(e) => {
-              e.stopPropagation()
-              onArchive()
-            }}
-          >
-            <Archive className="h-4 w-4 text-slate-600" />
-          </Button>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 hover:bg-yellow-50 rounded-lg transition-colors duration-200"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Clock className="h-4 w-4 text-slate-600" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-auto p-0 bg-white/95 backdrop-blur-md border-white/40 shadow-xl rounded-xl"
-              align="end"
-            >
-              <div className="p-3">
-                <div className="font-medium mb-3 text-slate-700">Snooze until</div>
-                <div className="space-y-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start hover:bg-blue-50 rounded-lg"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      const tomorrow = new Date()
-                      tomorrow.setDate(tomorrow.getDate() + 1)
-                      tomorrow.setHours(9, 0, 0, 0)
-                      onSnooze(email.id.toString(), tomorrow)
-                    }}
-                  >
-                    Tomorrow morning
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start hover:bg-blue-50 rounded-lg"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      const nextWeek = new Date()
-                      nextWeek.setDate(nextWeek.getDate() + 7)
-                      nextWeek.setHours(9, 0, 0, 0)
-                      onSnooze(email.id.toString(), nextWeek)
-                    }}
-                  >
-                    Next week
-                  </Button>
-                </div>
-                <Calendar
-                  mode="single"
-                  selected={undefined}
-                  onSelect={(date) => {
-                    if (date) {
-                      onSnooze(email.id.toString(), date)
-                    }
-                  }}
-                  className="mt-3 rounded-lg"
-                />
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:bg-red-50 rounded-lg transition-colors duration-200"
-            onClick={(e) => {
-              e.stopPropagation()
-              onDelete()
-            }}
-          >
-            <Trash2 className="h-4 w-4 text-slate-600" />
-          </Button>
-        </div>
-      )}
     </div>
   )
 }

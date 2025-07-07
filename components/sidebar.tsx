@@ -63,40 +63,48 @@ export default function Sidebar({ selectedFolder, onSelectFolder, onToggleSideba
     }
   }
 
-  const folderItems = [
-    {
-      id: "Top Urgent",
-      label: "High Priority",
-      icon: AlertCircle,
-      color: "from-red-500 to-orange-500",
-      bgColor: "bg-red-50 dark:bg-red-950/30",
-      textColor: "text-red-700 dark:text-red-300",
-    },
-    {
-      id: "Work",
-      label: "Work",
-      icon: Briefcase,
-      color: "from-blue-500 to-indigo-500",
-      bgColor: "bg-blue-50 dark:bg-blue-950/30",
-      textColor: "text-blue-700 dark:text-blue-300",
-    },
-    {
-      id: "Meeting",
-      label: "Meeting",
-      icon: Calendar,
-      color: "from-green-500 to-emerald-500",
-      bgColor: "bg-green-50 dark:bg-green-950/30",
-      textColor: "text-green-700 dark:text-green-300",
-    },
-    {
-      id: "Others",
-      label: "Others",
-      icon: Mail,
-      color: "from-purple-500 to-pink-500",
-      bgColor: "bg-purple-50 dark:bg-purple-950/30",
-      textColor: "text-purple-700 dark:text-purple-300",
-    },
-  ]
+const folderItems = [
+  {
+    id: "All",
+    label: "All Emails",
+    icon: Mail,
+    color: "from-gray-500 to-slate-500",
+    bgColor: "bg-gray-50 dark:bg-gray-950/30",
+    textColor: "text-gray-700 dark:text-gray-300",
+  },
+  {
+    id: "Top Urgent",
+    label: "High Priority",
+    icon: AlertCircle,
+    color: "from-red-500 to-orange-500",
+    bgColor: "bg-red-50 dark:bg-red-950/30",
+    textColor: "text-red-700 dark:text-red-300",
+  },
+  {
+    id: "Work",
+    label: "Work",
+    icon: Briefcase,
+    color: "from-blue-500 to-indigo-500",
+    bgColor: "bg-blue-50 dark:bg-blue-950/30",
+    textColor: "text-blue-700 dark:text-blue-300",
+  },
+  {
+    id: "Meeting",
+    label: "Meeting",
+    icon: Calendar,
+    color: "from-green-500 to-emerald-500",
+    bgColor: "bg-green-50 dark:bg-green-950/30",
+    textColor: "text-green-700 dark:text-green-300",
+  },
+  {
+    id: "Others",
+    label: "Possible Junk",
+    icon: Mail,
+    color: "from-purple-500 to-pink-500",
+    bgColor: "bg-purple-50 dark:bg-purple-950/30",
+    textColor: "text-purple-700 dark:text-purple-300",
+  },
+]
 
   const Logo = () => {
     return (
