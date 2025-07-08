@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Reply, Download } from "lucide-react"
+import { useForm } from "react-hook-form"
+import { ArrowLeft, Reply, Download, PenTool } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import type { Email } from "@/types/email"
@@ -9,7 +10,11 @@ import { formatDate } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { AvatarWithLogo } from "@/components/avatar-with-logo"
 import ComposeEmail from "@/components/compose-email"
-import { useToast } from "@/hooks/use-toast"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { setSignature } from "@/lib/api"
+import { toast } from "sonner"
 
 interface EmailDetailProps {
   email: Email
@@ -17,17 +22,63 @@ interface EmailDetailProps {
   onSnooze: (id: string, snoozeUntil: Date) => void
 }
 
+interface SignatureFormData {
+  signature: string
+}
+
 export default function EmailDetail({ email, onClose }: EmailDetailProps) {
   const [showDetails, setShowDetails] = useState(false)
   const [replyOpen, setReplyOpen] = useState(false)
-  const { toast } = useToast()
+  const [signatureDialogOpen, setSignatureDialogOpen] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+    watch
+  } = useForm<SignatureFormData>({
+    defaultValues: {
+      signature: ""
+    }
+  })
+
+  const signatureValue = watch("signature")
 
   // Handle sending reply
   const handleSendReply = () => {
-    toast({
-      title: "Reply Sent",
+    toast.success("Reply Sent", {
       description: `Your reply to ${email.from_name} has been sent.`,
     })
+  }
+
+  // Handle setting signature with React Hook Form
+  const onSubmitSignature = async (data: SignatureFormData) => {
+    try {
+      const result = await setSignature(data.signature)
+
+      if (result.success) {
+        toast.success("Success", {
+          description: result.message,
+        })
+        setSignatureDialogOpen(false)
+        reset()
+      } else {
+        toast.error("Error", {
+          description: result.message,
+        })
+      }
+    } catch (error) {
+      console.error("Failed to set signature:", error)
+      toast.error("Error", {
+        description: "Failed to update signature",
+      })
+    }
+  }
+
+  const handleDialogClose = () => {
+    setSignatureDialogOpen(false)
+    reset()
   }
 
   return (
@@ -113,16 +164,16 @@ export default function EmailDetail({ email, onClose }: EmailDetailProps) {
               </div>
             </div>
 
-<div className="text-sm text-slate-500 bg-white/60 px-3 py-1 rounded-full backdrop-blur-sm border border-white/40">
-  {new Date(email.created_at).toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  })}
-</div>
+            <div className="text-sm text-slate-500 bg-white/60 px-3 py-1 rounded-full backdrop-blur-sm border border-white/40">
+              {new Date(email.created_at).toLocaleString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })}
+            </div>
           </div>
 
           {/* Email Body */}
@@ -183,16 +234,74 @@ export default function EmailDetail({ email, onClose }: EmailDetailProps) {
       </ScrollArea>
 
       {/* Action Bar */}
-<div className="p-4 border-t border-white/20 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 backdrop-blur-sm">
-  <div className="flex items-center gap-3">
-    <Button className="flex-1 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl cursor-pointer transform hover:scale-105 hover:shadow-purple-500/25 border border-white/20"
-    onClick={() => setReplyOpen(true)}
-    >
-      <Reply className="mr-2 h-4 w-4" />
-      Smart AI Reply
-    </Button>
-  </div>
-</div>
+      <div className="p-4 border-t border-white/20 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <Button
+            className="flex-1 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl cursor-pointer transform hover:scale-105 hover:shadow-purple-500/25 border border-white/20"
+            onClick={() => setReplyOpen(true)}
+          >
+            <Reply className="mr-2 h-4 w-4" />
+            Smart AI Reply
+          </Button>
+
+          <Dialog open={signatureDialogOpen} onOpenChange={setSignatureDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="bg-white/60 hover:bg-white/80 border-white/40 text-slate-700 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl"
+              >
+                <PenTool className="mr-2 h-4 w-4" />
+                Add Signature
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md bg-gradient-to-br from-white/95 to-white/90 backdrop-blur-md border-white/40">
+              <DialogHeader>
+                <DialogTitle className="text-slate-800">Set Email Signature</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit(onSubmitSignature)} className="space-y-4">
+                <div>
+                  <Label htmlFor="signature" className="text-sm font-medium text-slate-700">
+                    Signature
+                  </Label>
+                  <Textarea
+                    id="signature"
+                    placeholder="Enter your email signature..."
+                    {...register("signature", {
+                      required: "Please enter a signature",
+                      minLength: {
+                        value: 1,
+                        message: "Signature cannot be empty"
+                      }
+                    })}
+                    className="mt-1 bg-white/60 border-white/40 focus:border-blue-300 focus:ring-blue-200"
+                    rows={4}
+                  />
+                  {errors.signature && (
+                    <p className="mt-1 text-sm text-red-600">{errors.signature.message}</p>
+                  )}
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleDialogClose}
+                    className="bg-white/60 hover:bg-white/80 border-white/40"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || !signatureValue?.trim()}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
+                  >
+                    {isSubmitting ? "Setting..." : "Set Signature"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
 
       {/* Reply Modal */}
       <ComposeEmail

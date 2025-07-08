@@ -57,6 +57,7 @@ export default function ComposeEmail({ open, onClose, onSend, replyTo }: Compose
   const [showCcBcc, setShowCcBcc] = useState(false)
   const [smartReplies, setSmartReplies] = useState<string[]>([])
   const [selectedReplies, setSelectedReplies] = useState<number[]>([])
+  const [signature, setSignature] = useState(""); 
   const [loadingReplies, setLoadingReplies] = useState(false)
   const [showSmartReplies, setShowSmartReplies] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -79,25 +80,26 @@ export default function ComposeEmail({ open, onClose, onSend, replyTo }: Compose
 
   const [selectedAccount, setSelectedAccount] = useState(mockAccounts[0])
 
-  const loadSmartReplies = async () => {
-    if (!replyTo?.graphId) return
+const loadSmartReplies = async () => {
+  if (!replyTo?.graphId) return;
 
-    setLoadingReplies(true)
-    try {
-      const replies = await fetchSmartReplies(replyTo.graphId)
-      setSmartReplies(replies)
-      setSelectedReplies([])
-      setShowSmartReplies(replies.length > 0)
-    } catch (error) {
-      console.error("Failed to load smart replies:", error)
-      toast.error("Failed to Load Smart Replies", {
-        description: "Unable to generate AI replies. You can still write a custom reply.",
-        duration: 3000,
-      })
-    } finally {
-      setLoadingReplies(false)
-    }
+  setLoadingReplies(true);
+  try {
+    const response = await fetchSmartReplies(replyTo.graphId);
+    setSmartReplies(response.replies);
+    setSignature(response.signature); // Set the signature from API
+    setSelectedReplies([]);
+    setShowSmartReplies(response.replies.length > 0);
+  } catch (error) {
+    console.error("Failed to load smart replies:", error);
+    toast.error("Failed to Load Smart Replies", {
+      description: "Unable to generate AI replies. You can still write a custom reply.",
+      duration: 3000,
+    });
+  } finally {
+    setLoadingReplies(false);
   }
+}
 
   // Handle file selection
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,25 +128,28 @@ export default function ComposeEmail({ open, onClose, onSend, replyTo }: Compose
   }
 
   // Handle combining selected smart replies
-  const handleCombineSelectedReplies = () => {
-    if (selectedReplies.length === 0) return
+// Handle single smart reply selection
+const handleSmartReplySelect = (reply: string) => {
+  // Remove HTML tags if present (since we're showing in a textarea)
+  const plainTextReply = reply.replace(/<[^>]*>?/gm, '');
+  setContent(plainTextReply + "\n\n" + signature);
+  setSelectedReplies([]);
+  setShowSmartReplies(false);
+}
 
-    const combinedReplies = selectedReplies
-      .sort((a, b) => a - b) // Sort to maintain order
-      .map((index) => smartReplies[index])
-      .join("\n\n") // Join with double line breaks
+// Handle combining selected smart replies
+const handleCombineSelectedReplies = () => {
+  if (selectedReplies.length === 0) return;
 
-    setContent(combinedReplies)
-    setSelectedReplies([])
-    setShowSmartReplies(false)
-  }
-
-  // Handle single smart reply selection
-  const handleSmartReplySelect = (reply: string) => {
-    setContent(reply)
-    setSelectedReplies([])
-    setShowSmartReplies(false)
-  }
+  const combinedReplies = selectedReplies
+    .sort((a, b) => a - b)
+    .map((index) => smartReplies[index].replace(/<[^>]*>?/gm, '')) // Remove HTML tags
+    .join("\n\n");
+  
+  setContent(combinedReplies + "\n\n" + signature);
+  setSelectedReplies([]);
+  setShowSmartReplies(false);
+}
 
   // Reset form state
   const resetForm = () => {

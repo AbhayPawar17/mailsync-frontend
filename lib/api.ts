@@ -74,7 +74,7 @@ export async function fetchMessageDetail(graphId: string): Promise<any> {
   }
 }
 
-export async function fetchSmartReplies(graphId: string): Promise<string[]> {
+export async function fetchSmartReplies(graphId: string): Promise<{ replies: string[]; signature: string }> {
   try {
     const token = getToken()
     const formData = new FormData()
@@ -96,27 +96,32 @@ export async function fetchSmartReplies(graphId: string): Promise<string[]> {
 
     if (data.data && data.data.body && data.data.body.replies) {
       // Convert HTML to plain text
-      return data.data.body.replies.map((reply: string) => {
+      const replies = data.data.body.replies.map((reply: string) => {
         // Remove HTML tags and decode HTML entities
         const tempDiv = document.createElement("div")
         tempDiv.innerHTML = reply
         return tempDiv.textContent || tempDiv.innerText || ""
       })
+
+      return {
+        replies,
+        signature: data.data.signature || ""
+      }
     }
 
-    return []
+    return { replies: [], signature: "" }
   } catch (error) {
     console.error("Error fetching smart replies:", error)
-    return []
+    return { replies: [], signature: "" }
   }
 }
 
 export async function sendSmartReply(graphId: string, replyMessage: string): Promise<boolean> {
   try {
-    const token = getToken();
-    const formData = new FormData();
-    formData.append("graph_id", graphId);
-    formData.append("reply_message", replyMessage);
+    const token = getToken()
+    const formData = new FormData()
+    formData.append("graph_id", graphId)
+    formData.append("reply_message", replyMessage)
 
     const response = await fetch(`${API_BASE_URL}/reply`, {
       method: "POST",
@@ -124,28 +129,28 @@ export async function sendSmartReply(graphId: string, replyMessage: string): Pro
         Authorization: `Bearer ${token}`,
       },
       body: formData,
-    });
+    })
 
     if (!response.ok) {
-      throw new Error("Failed to send reply");
+      throw new Error("Failed to send reply")
     }
 
-    const data = await response.json();
-    
+    const data = await response.json()
+
     // Check both possible response formats:
     // 1. The nested format you showed: { message: { status: boolean, message: string } }
     // 2. Direct status format for backward compatibility
     if (data.message?.status !== undefined) {
-      return data.message.status;
+      return data.message.status
     } else if (data.status !== undefined) {
-      return data.status;
+      return data.status
     }
-    
+
     // If neither format is found, assume failure
-    return false;
+    return false
   } catch (error) {
-    console.error("Error sending smart reply:", error);
-    return false;
+    console.error("Error sending smart reply:", error)
+    return false
   }
 }
 
@@ -204,5 +209,38 @@ export async function searchEmails(query: string): Promise<Email[]> {
   } catch (error) {
     console.error("Error searching emails:", error)
     return []
+  }
+}
+
+export async function setSignature(signature: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const token = getToken()
+    const response = await fetch(`${API_BASE_URL}/set_signature`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        signature: signature,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error("Failed to set signature")
+    }
+
+    const data = await response.json()
+
+    return {
+      success: data.status === 200,
+      message: data.message || "Signature updated successfully",
+    }
+  } catch (error) {
+    console.error("Error setting signature:", error)
+    return {
+      success: false,
+      message: "Failed to update signature",
+    }
   }
 }
