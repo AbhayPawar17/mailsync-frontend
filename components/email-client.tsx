@@ -12,6 +12,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import { fetchAllMessages, fetchMessageDetail } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Calendar, Mail, MailIcon, RefreshCw } from "lucide-react"
+import Dashboard from "@/components/dashboard"
 
 export default function EmailClient() {
   const [selectedFolder, setSelectedFolder] = useState<EmailFolder>("Top Urgent")
@@ -32,7 +33,7 @@ export default function EmailClient() {
     if (selectedFolder === "All") {
       return emails
     }
-    
+
     // Otherwise, filter by the specific category
     return emails.filter((email) => email.category === selectedFolder)
   }, [emails, selectedFolder])
@@ -155,7 +156,7 @@ export default function EmailClient() {
         handleEmailSelect(firstVisibleEmail)
       }
     }
-   // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [emails, filteredEmails, selectedEmail, loading])
 
   useEffect(() => {
@@ -196,6 +197,28 @@ export default function EmailClient() {
       </div>
     </div>
   )
+
+  // Show Dashboard when Dashboard folder is selected
+if (selectedFolder === "Dashboard") {
+  return (
+    <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+      {/* Sidebar */}
+      <div className={`${sidebarOpen ? "block" : "hidden"} md:block relative z-10 flex-shrink-0`}>
+        <Sidebar
+          selectedFolder={selectedFolder}
+          onSelectFolder={setSelectedFolder}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onSendEmail={handleSendEmail}
+        />
+      </div>
+      
+      {/* Dashboard Content */}
+      <div className="flex-1 overflow-hidden relative z-10">
+        <Dashboard />
+      </div>
+    </div>
+  )
+}
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">

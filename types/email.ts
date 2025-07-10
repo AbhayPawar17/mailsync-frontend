@@ -1,4 +1,4 @@
-export type EmailFolder = "All" | "Top Urgent" | "Work" | "Meeting" | "Others"
+export type EmailFolder = "All" | "Top Urgent" | "Work" | "Meeting" | "Others" | "Dashboard"
 
 export interface Attachment {
   name: string

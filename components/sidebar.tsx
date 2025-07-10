@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { AlertCircle, X, Briefcase, Calendar, Mail, LogOut, ChevronRight, ChevronLeft, MailCheck } from "lucide-react"
+import { AlertCircle,LayoutDashboard , X, Briefcase, Calendar, Mail, LogOut, ChevronRight, ChevronLeft, MailCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { motion, AnimatePresence } from "framer-motion"
@@ -64,6 +64,14 @@ export default function Sidebar({ selectedFolder, onSelectFolder, onToggleSideba
   }
 
 const folderItems = [
+  {
+    id: "Dashboard",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+     color: "from-cyan-500 to-blue-500",
+      bgColor: "bg-cyan-50 dark:bg-cyan-950/30",
+      textColor: "text-cyan-700 dark:text-cyan-300",
+  },
   {
     id: "All",
     label: "All Emails",
