@@ -3,7 +3,7 @@
 import type React from "react"
 import { toast } from "sonner"
 import { useState, useRef, useEffect } from "react"
-import { Menu, Search, X, Sparkles, Mail } from "lucide-react"
+import { Menu, Search, X, Sparkles, Mail, Trash2, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import type { Email, EmailFolder } from "@/types/email"
@@ -11,6 +11,18 @@ import { formatDistanceToNow } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { AvatarWithLogo } from "@/components/avatar-with-logo"
 import { searchEmails } from "@/lib/api"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 interface EmailListProps {
   emails: Email[]
@@ -20,9 +32,12 @@ interface EmailListProps {
   onToggleSidebar: () => void
   onArchiveEmail: (id: string) => void
   onDeleteEmail: (id: string) => void
+  onDeleteAllEmails: () => void
+  onDeleteSelectedEmails: (graphIds: string[]) => void
   onSnoozeEmail: (id: string, snoozeUntil: Date) => void
   onRefresh?: () => void
   loading?: boolean
+  deleting?: boolean
 }
 
 export default function EmailList({
@@ -33,14 +48,20 @@ export default function EmailList({
   onToggleSidebar,
   onArchiveEmail,
   onDeleteEmail,
+  onDeleteAllEmails,
+  onDeleteSelectedEmails,
   onSnoozeEmail,
   loading = false,
+  deleting = false,
 }: EmailListProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [searching, setSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<Email[]>([])
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [searchInputFocused, setSearchInputFocused] = useState(false)
+  const [selectedEmailIds, setSelectedEmailIds] = useState<Set<string>>(new Set())
+  const [selectAllChecked, setSelectAllChecked] = useState(false)
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
 
   // Use search results when in search mode, otherwise filter local emails
   const filteredEmails = isSearchMode
@@ -51,6 +72,16 @@ export default function EmailList({
           email.from_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           email.description.toLowerCase().includes(searchQuery.toLowerCase()),
       )
+
+  // Update select all checkbox state based on selected emails
+  useEffect(() => {
+    if (filteredEmails.length === 0) {
+      setSelectAllChecked(false)
+    } else {
+      const allSelected = filteredEmails.every((email) => selectedEmailIds.has(email.id.toString()))
+      setSelectAllChecked(allSelected)
+    }
+  }, [selectedEmailIds, filteredEmails])
 
   // Get folder name for display
   const getFolderName = () => {
@@ -122,6 +153,40 @@ export default function EmailList({
     setSearchResults([])
   }
 
+  const handleSelectAll = (checked: boolean) => {
+    setIsSelectionMode(checked)
+    if (checked) {
+      const allEmailIds = new Set(filteredEmails.map((email) => email.id.toString()))
+      setSelectedEmailIds(allEmailIds)
+    } else {
+      setSelectedEmailIds(new Set())
+    }
+    setSelectAllChecked(checked)
+  }
+
+  const handleEmailSelect = (emailId: string, checked: boolean) => {
+    const newSelectedIds = new Set(selectedEmailIds)
+    if (checked) {
+      newSelectedIds.add(emailId)
+    } else {
+      newSelectedIds.delete(emailId)
+    }
+    setSelectedEmailIds(newSelectedIds)
+
+    // If no items are selected, exit selection mode
+    if (newSelectedIds.size === 0) {
+      setIsSelectionMode(false)
+      setSelectAllChecked(false)
+    }
+  }
+
+  const handleDeleteSelected = () => {
+    const selectedEmails = filteredEmails.filter((email) => selectedEmailIds.has(email.id.toString()))
+    const graphIds = selectedEmails.map((email) => email.graph_id)
+    onDeleteSelectedEmails(graphIds)
+    setSelectedEmailIds(new Set())
+  }
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -148,7 +213,106 @@ export default function EmailList({
             </Button>
           )}
         </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          {selectedEmailIds.size > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={deleting}
+                  className="bg-gradient-to-r from-red-50 to-rose-50 hover:from-red-100 hover:to-rose-100 border border-red-200/50 rounded-xl transition-all duration-200 shadow-sm text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className={`h-4 w-4 mr-2 ${deleting ? "animate-pulse" : ""}`} />
+                  Delete Selected ({selectedEmailIds.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white/95 backdrop-blur-md border border-white/40">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+                    <AlertTriangle className="h-5 w-5" />
+                    Delete Selected Emails
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {selectedEmailIds.size} selected email
+                    {selectedEmailIds.size > 1 ? "s" : ""}? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="hover:bg-white/60">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteSelected}
+                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
+                  >
+                    Delete Selected
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+
+          {filteredEmails.length > 0 && !isSearchMode && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                {/* <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={deleting}
+                  className="bg-gradient-to-r from-red-50 to-rose-50 hover:from-red-100 hover:to-rose-100 border border-red-200/50 rounded-xl transition-all duration-200 shadow-sm text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className={`h-4 w-4 mr-2 ${deleting ? "animate-pulse" : ""}`} />
+                  Delete All ({filteredEmails.length})
+                </Button> */}
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white/95 backdrop-blur-md border border-white/40">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+                    <AlertTriangle className="h-5 w-5" />
+                    Delete All Emails
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete all {filteredEmails.length} email
+                    {filteredEmails.length > 1 ? "s" : ""} in this folder? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="hover:bg-white/60">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={onDeleteAllEmails}
+                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
+                  >
+                    Delete All
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
       </div>
+
+      {/* Select All Checkbox */}
+      {filteredEmails.length > 0 && !loading && !searching && (
+        <div className="p-3 border-b border-white/20 bg-gradient-to-r from-white/70 to-white/50">
+          <div className="flex items-center gap-3">
+            <Checkbox
+              id="select-all"
+              checked={selectAllChecked}
+              onCheckedChange={handleSelectAll}
+              className="border-slate-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+            />
+            <label htmlFor="select-all" className="text-sm font-medium text-slate-700 cursor-pointer">
+              Select All ({filteredEmails.length} emails)
+            </label>
+            {/* {selectedEmailIds.size > 0 && (
+              <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                {selectedEmailIds.size} selected
+              </span>
+            )} */}
+          </div>
+        </div>
+      )}
 
       {/* Compact Search Bar */}
       <div className="p-4 bg-gradient-to-r from-white/70 to-white/50 border-b border-white/20">
@@ -228,7 +392,6 @@ export default function EmailList({
             </div>
           )}
         </form>
-
       </div>
 
       {/* Email List */}
@@ -257,11 +420,15 @@ export default function EmailList({
                 key={email.id}
                 email={email}
                 isSelected={selectedEmail?.id === email.id}
+                isChecked={selectedEmailIds.has(email.id.toString())}
+                isSelectionMode={isSelectionMode}
                 selectedFolder={selectedFolder}
                 onSelect={() => onSelectEmail(email)}
+                onCheck={(checked) => handleEmailSelect(email.id.toString(), checked)}
                 onArchive={() => onArchiveEmail(email.id.toString())}
                 onDelete={() => onDeleteEmail(email.id.toString())}
                 onSnooze={onSnoozeEmail}
+                deleting={deleting}
               />
             ))}
           </div>
@@ -325,18 +492,27 @@ function EmailListLoader({ searching = false }: { searching?: boolean }) {
 interface EmailListItemProps {
   email: Email
   isSelected: boolean
+  isChecked: boolean
+  isSelectionMode: boolean
   selectedFolder: EmailFolder
   onSelect: () => void
+  onCheck: (checked: boolean) => void
   onArchive: () => void
   onDelete: () => void
   onSnooze: (id: string, snoozeUntil: Date) => void
+  deleting?: boolean
 }
 
 function EmailListItem({
   email,
   isSelected,
+  isChecked,
+  isSelectionMode,
   selectedFolder,
   onSelect,
+  onCheck,
+  onDelete,
+  deleting = false,
 }: EmailListItemProps) {
   const [isHovered, setIsHovered] = useState(false)
   const itemRef = useRef<HTMLDivElement>(null)
@@ -418,17 +594,27 @@ function EmailListItem({
   return (
     <div
       ref={itemRef}
-      className={`p-4 cursor-pointer relative flex items-center gap-3 transition-all duration-200 ${
+      className={`p-4 cursor-pointer relative flex items-center gap-3 transition-all duration-200 group ${
         isSelected
           ? getSelectedStyling()
           : isHovered
             ? getHoverStyling()
             : "border-l-4 border-transparent hover:bg-white/30"
-      } ${!email.read ? "font-medium" : ""}`}
+      } ${!email.read ? "font-medium" : ""} ${isChecked ? "bg-blue-50/50" : ""}`}
       onClick={onSelect}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Checkbox - only show in selection mode */}
+      {isSelectionMode && (
+        <Checkbox
+          checked={isChecked}
+          onCheckedChange={onCheck}
+          onClick={(e) => e.stopPropagation()}
+          className="border-slate-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+        />
+      )}
+
       <AvatarWithLogo
         sender={{
           name: email.from_name,
@@ -437,35 +623,73 @@ function EmailListItem({
         }}
       />
 
+      <div className="flex-1 min-w-0">
+        {/* Combined subject and sender name - responsive layout */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 mb-1">
+          <div className="min-w-0 flex-1">
+            <div className="text-sm text-slate-700 break-words">
+              <span className="font-medium">{email.title}</span>
+              <span className="text-slate-500 ml-1">from {email.from_name}</span>
+            </div>
+          </div>
+          <div className="text-xs text-slate-400 whitespace-nowrap flex-shrink-0">
+            {formatDistanceToNow(new Date(email.created_at))}
+          </div>
+        </div>
 
-<div className="flex-1 min-w-0">
-  {/* Combined subject and sender name - responsive layout */}
-  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 mb-1">
-    <div className="min-w-0 flex-1">
-      <div className="text-sm text-slate-700 break-words">
-        <span className="font-medium">{email.title}</span>
-        <span className="text-slate-500 ml-1">from {email.from_name}</span>
+        {/* Preview of email content - responsive wrapping */}
+        <div className="text-xs text-slate-500 break-words mb-2">{email.description}</div>
+
+        {/* Badges for email categories - responsive wrapping */}
+        <div className="flex flex-wrap gap-1.5">
+          {getBadges().map((badge, index) => (
+            <Badge key={index} className={`text-xs px-2 py-0.5 rounded-full ${badge.className}`}>
+              {badge.label}
+            </Badge>
+          ))}
+        </div>
       </div>
-    </div>
-    <div className="text-xs text-slate-400 whitespace-nowrap flex-shrink-0">
-      {formatDistanceToNow(new Date(email.created_at))}
-    </div>
-  </div>
 
-  {/* Preview of email content - responsive wrapping */}
-  <div className="text-xs text-slate-500 break-words mb-2">
-    {email.description}
-  </div>
-
-  {/* Badges for email categories - responsive wrapping */}
-  <div className="flex flex-wrap gap-1.5">
-    {getBadges().map((badge, index) => (
-      <Badge key={index} className={`text-xs px-2 py-0.5 rounded-full ${badge.className}`}>
-        {badge.label}
-      </Badge>
-    ))}
-  </div>
-</div>
+      {/* Delete Button - appears on hover */}
+      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={deleting}
+              className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="bg-white/95 backdrop-blur-md border border-white/40">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="h-5 w-5" />
+                Delete Email
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this email from <strong>{email.from_name}</strong>? This action cannot
+                be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="hover:bg-white/60">Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDelete()
+                }}
+                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </div>
   )
 }

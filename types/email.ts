@@ -37,6 +37,10 @@ export interface Email {
   type: string
   read?: boolean
   flagged?: boolean
+  deleted?: boolean
+  snoozed?: boolean
+  snoozeUntil?: Date
+  archived?: boolean
   attachments?: Attachment[]
   body?: {
     contentType: string

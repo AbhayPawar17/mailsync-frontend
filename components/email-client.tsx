@@ -9,7 +9,7 @@ import type { Email, EmailFolder } from "@/types/email"
 import { useMobile } from "@/hooks/use-mobile"
 import { useToast } from "@/hooks/use-toast"
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
-import { fetchAllMessages, fetchMessageDetail } from "@/lib/api"
+import { fetchAllMessages, fetchMessageDetail, deleteMail, deleteAllMails } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Calendar, Mail, MailIcon, RefreshCw } from "lucide-react"
 import Dashboard from "@/components/dashboard"
@@ -24,6 +24,7 @@ export default function EmailClient() {
   const [detailOpen, setDetailOpen] = useState(false)
   const [calendarOpen, setCalendarOpen] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const isMobile = useMobile()
   const { toast } = useToast()
 
@@ -31,11 +32,11 @@ export default function EmailClient() {
   const filteredEmails = useMemo(() => {
     // If "All" is selected, show all emails from all categories
     if (selectedFolder === "All") {
-      return emails
+      return emails.filter((email) => !email.deleted)
     }
 
     // Otherwise, filter by the specific category
-    return emails.filter((email) => email.category === selectedFolder)
+    return emails.filter((email) => email.category === selectedFolder && !email.deleted)
   }, [emails, selectedFolder])
 
   // Close sidebar on mobile by default
@@ -107,12 +108,138 @@ export default function EmailClient() {
     }
   }
 
-  // Handle email delete
-  const handleDeleteEmail = (emailId: string) => {
-    setEmails(emails.map((email) => (email.id.toString() === emailId ? { ...email, deleted: true } : email)))
+  // Handle single email delete
+  const handleDeleteEmail = async (emailId: string) => {
+    const email = emails.find((e) => e.id.toString() === emailId)
+    if (!email) return
 
-    if (selectedEmail?.id.toString() === emailId) {
-      setSelectedEmail(null)
+    setDeleting(true)
+    try {
+      const result = await deleteMail([email.graph_id])
+
+      if (result.success) {
+        setEmails(emails.map((email) => (email.id.toString() === emailId ? { ...email, deleted: true } : email)))
+
+        if (selectedEmail?.id.toString() === emailId) {
+          setSelectedEmail(null)
+        }
+
+        toast({
+          title: "Email Deleted",
+          description: "The email has been successfully deleted.",
+        })
+      } else {
+        toast({
+          title: "Delete Failed",
+          description: result.message || "Failed to delete email. Please try again.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error deleting email:", error)
+      toast({
+        title: "Delete Failed",
+        description: "An error occurred while deleting the email.",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  // Handle delete all emails
+  const handleDeleteAllEmails = async () => {
+    if (filteredEmails.length === 0) {
+      toast({
+        title: "No Emails",
+        description: "There are no emails to delete.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setDeleting(true)
+    try {
+      const graphIds = filteredEmails.map((email) => email.graph_id)
+      const result = await deleteAllMails(graphIds)
+
+      if (result.success) {
+        // Mark all filtered emails as deleted
+        const emailIds = filteredEmails.map((email) => email.id.toString())
+        setEmails(emails.map((email) => (emailIds.includes(email.id.toString()) ? { ...email, deleted: true } : email)))
+
+        // Clear selected email if it was deleted
+        if (selectedEmail && emailIds.includes(selectedEmail.id.toString())) {
+          setSelectedEmail(null)
+        }
+
+        toast({
+          title: "All Emails Deleted",
+          description: `Successfully deleted ${filteredEmails.length} email${filteredEmails.length > 1 ? "s" : ""}.`,
+        })
+      } else {
+        toast({
+          title: "Delete Failed",
+          description: result.message || "Failed to delete all emails. Please try again.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error deleting all emails:", error)
+      toast({
+        title: "Delete Failed",
+        description: "An error occurred while deleting all emails.",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  // Handle delete selected emails
+  const handleDeleteSelectedEmails = async (graphIds: string[]) => {
+    if (graphIds.length === 0) {
+      toast({
+        title: "No Emails Selected",
+        description: "Please select emails to delete.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setDeleting(true)
+    try {
+      const result = await deleteAllMails(graphIds)
+
+      if (result.success) {
+        // Mark selected emails as deleted
+        setEmails(emails.map((email) => (graphIds.includes(email.graph_id) ? { ...email, deleted: true } : email)))
+
+        // Clear selected email if it was deleted
+        if (selectedEmail && graphIds.includes(selectedEmail.graph_id)) {
+          setSelectedEmail(null)
+        }
+
+        toast({
+          title: "Selected Emails Deleted",
+          description: `Successfully deleted ${graphIds.length} email${graphIds.length > 1 ? "s" : ""}.`,
+        })
+      } else {
+        toast({
+          title: "Delete Failed",
+          description: result.message || "Failed to delete selected emails. Please try again.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error deleting selected emails:", error)
+      toast({
+        title: "Delete Failed",
+        description: "An error occurred while deleting selected emails.",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -199,26 +326,26 @@ export default function EmailClient() {
   )
 
   // Show Dashboard when Dashboard folder is selected
-if (selectedFolder === "Dashboard") {
-  return (
-    <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
-      {/* Sidebar */}
-      <div className={`${sidebarOpen ? "block" : "hidden"} md:block relative z-10 flex-shrink-0`}>
-        <Sidebar
-          selectedFolder={selectedFolder}
-          onSelectFolder={setSelectedFolder}
-          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          onSendEmail={handleSendEmail}
-        />
+  if (selectedFolder === "Dashboard") {
+    return (
+      <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+        {/* Sidebar */}
+        <div className={`${sidebarOpen ? "block" : "hidden"} md:block relative z-10 flex-shrink-0`}>
+          <Sidebar
+            selectedFolder={selectedFolder}
+            onSelectFolder={setSelectedFolder}
+            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+            onSendEmail={handleSendEmail}
+          />
+        </div>
+
+        {/* Dashboard Content */}
+        <div className="flex-1 overflow-hidden relative z-10">
+          <Dashboard />
+        </div>
       </div>
-      
-      {/* Dashboard Content */}
-      <div className="flex-1 overflow-hidden relative z-10">
-        <Dashboard />
-      </div>
-    </div>
-  )
-}
+    )
+  }
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
@@ -281,10 +408,13 @@ if (selectedFolder === "Dashboard") {
                   onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
                   onArchiveEmail={handleArchiveEmail}
                   onDeleteEmail={handleDeleteEmail}
+                  onDeleteAllEmails={handleDeleteAllEmails}
+                  onDeleteSelectedEmails={handleDeleteSelectedEmails}
                   onSnoozeEmail={handleSnoozeEmail}
                   onRefresh={handleRefreshEmails}
                   selectedFolder={selectedFolder}
                   loading={loading}
+                  deleting={deleting}
                 />
               </div>
             </div>
@@ -299,7 +429,7 @@ if (selectedFolder === "Dashboard") {
         // Desktop view - resizable panels
         <div className="flex flex-1 overflow-hidden relative z-10">
           <ResizablePanelGroup direction="horizontal" className="flex-1">
-            <ResizablePanel defaultSize={calendarOpen ? 25 : 30} minSize={20}>
+            <ResizablePanel defaultSize={calendarOpen ? 30 : 35} minSize={25}>
               <div className="flex flex-col h-full bg-white/60 backdrop-blur-md border-r border-white/20 rounded-l-2xl ml-2 my-2 shadow-xl">
                 <div className="p-3 border-b border-white/20 flex justify-between items-center flex-shrink-0">
                   <Button
@@ -330,10 +460,13 @@ if (selectedFolder === "Dashboard") {
                     onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
                     onArchiveEmail={handleArchiveEmail}
                     onDeleteEmail={handleDeleteEmail}
+                    onDeleteAllEmails={handleDeleteAllEmails}
+                    onDeleteSelectedEmails={handleDeleteSelectedEmails}
                     onSnoozeEmail={handleSnoozeEmail}
                     onRefresh={handleRefreshEmails}
                     selectedFolder={selectedFolder}
                     loading={loading}
+                    deleting={deleting}
                   />
                 </div>
               </div>
@@ -341,7 +474,7 @@ if (selectedFolder === "Dashboard") {
 
             <ResizableHandle withHandle className="bg-white/40 hover:bg-white/60 transition-colors duration-200" />
 
-            <ResizablePanel defaultSize={calendarOpen ? 55 : 70}>
+            <ResizablePanel defaultSize={calendarOpen ? 50 : 65}>
               <div className="h-full bg-white/60 backdrop-blur-md border-r border-white/20 mx-2 my-2 rounded-2xl shadow-xl overflow-hidden">
                 {emailDetailLoading ? (
                   <EmailDetailLoader />

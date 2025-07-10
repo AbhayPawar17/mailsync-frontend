@@ -105,7 +105,7 @@ export async function fetchSmartReplies(graphId: string): Promise<{ replies: str
 
       return {
         replies,
-        signature: data.data.signature || ""
+        signature: data.data.signature || "",
       }
     }
 
@@ -241,6 +241,72 @@ export async function setSignature(signature: string): Promise<{ success: boolea
     return {
       success: false,
       message: "Failed to update signature",
+    }
+  }
+}
+
+export async function deleteMail(graphIds: string[]): Promise<{ success: boolean; message: string }> {
+  try {
+    const token = getToken()
+    const response = await fetch(`${API_BASE_URL}/delete_mail`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        graph_id: graphIds,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error("Failed to delete mail")
+    }
+
+    const data = await response.json()
+
+    return {
+      success: data.status || false,
+      message: data.message || "Mail deleted successfully",
+    }
+  } catch (error) {
+    console.error("Error deleting mail:", error)
+    return {
+      success: false,
+      message: "Failed to delete mail",
+    }
+  }
+}
+
+export async function deleteAllMails(graphIds: string[]): Promise<{ success: boolean; message: string }> {
+  try {
+    const token = getToken()
+    const response = await fetch(`${API_BASE_URL}/delete_mail`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        graph_id: graphIds,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error("Failed to delete all mails")
+    }
+
+    const data = await response.json()
+
+    return {
+      success: data.status || false,
+      message: data.message || "All mails deleted successfully",
+    }
+  } catch (error) {
+    console.error("Error deleting all mails:", error)
+    return {
+      success: false,
+      message: "Failed to delete all mails",
     }
   }
 }

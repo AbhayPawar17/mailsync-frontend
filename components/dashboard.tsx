@@ -415,7 +415,7 @@ export default function Dashboard() {
     animate={{ opacity: 1, x: 0 }}
     transition={{ duration: 0.8, delay: 0.4 }}
   >
-    <Card className="h-full bg-gradient-to-br from-blue-50/80 to-cyan-50/80 backdrop-blur-sm border-blue-200/50 shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-blue-300/30">
+    <Card className="h-full bg-gradient-to-br from-blue-50/80 to-cyan-50/80 backdrop-blur-sm border-blue-200/50 shadow-xl hover:shadow-2xl transition-all duration-500 border-2">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
