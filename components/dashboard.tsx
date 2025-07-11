@@ -280,11 +280,9 @@ export default function Dashboard() {
 
   return (
     <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
-      {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {particles}
 
-        {/* Gradient Orbs */}
         <motion.div
           className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/30 to-pink-400/30 rounded-full blur-3xl"
           animate={{
@@ -324,28 +322,8 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Main Scrollable Content */}
       <ScrollArea className="h-full">
         <div className="relative z-10 p-6 min-h-full">
-          {/* Header */}
-          <motion.div
-            className="flex items-center justify-between mb-8"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="flex items-center gap-4">
-              <div className="relative">
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  AI Dashboard
-                </h1>
-                <p className="text-gray-600">Intelligent Email Insights & Analytics</p>
-              </div>
-            </div>
-          </motion.div>
-
           {error && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -357,9 +335,7 @@ export default function Dashboard() {
             </motion.div>
           )}
 
-{/* Main Grid */}
 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-  {/* AI Summary Panel - Large Left */}
   <motion.div
     className="lg:col-span-2"
     initial={{ opacity: 0, x: -50 }}
@@ -400,7 +376,6 @@ export default function Dashboard() {
     </Card>
   </motion.div>
 
-  {/* Short Summary - Top Right */}
   <motion.div
     initial={{ opacity: 0, x: 50 }}
     animate={{ opacity: 1, x: 0 }}
@@ -440,9 +415,7 @@ export default function Dashboard() {
   </motion.div>
 </div>
 
-          {/* Bottom Row */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-6">
-            {/* Analytics & Charts - Bottom Right */}
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -485,7 +458,6 @@ export default function Dashboard() {
                         </div>
                       </div>
 
-                      {/* Mini Chart Visualization */}
                       <div className="mt-4 p-3 bg-white/60 rounded-lg">
                         <div className="text-xs font-medium text-gray-700 mb-2">Priority Distribution</div>
                         <div className="flex gap-1 h-8">
@@ -513,7 +485,6 @@ export default function Dashboard() {
                         </div>
                       </div>
 
-                      {/* Additional Analytics */}
                       <div className="space-y-3">
                         <div className="p-3 bg-white/60 rounded-lg">
                           <div className="text-xs font-medium text-gray-700 mb-2">Category Breakdown</div>
@@ -543,7 +514,6 @@ export default function Dashboard() {
               </Card>
             </motion.div>
 
-            {/* Smart Events - Full Width Bottom */}
             <motion.div
               className="lg:col-span-2"
               initial={{ opacity: 0, y: 50 }}
