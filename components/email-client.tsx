@@ -7,7 +7,7 @@ import EmailDetail from "@/components/email-detail"
 import CalendarSidebar from "@/components/calendar-sidebar"
 import type { Email, EmailFolder } from "@/types/email"
 import { useMobile } from "@/hooks/use-mobile"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
 import { fetchAllMessages, fetchMessageDetail, deleteMail, deleteAllMails } from "@/lib/api"
 import { Button } from "@/components/ui/button"
@@ -26,7 +26,7 @@ export default function EmailClient() {
   const [refreshing, setRefreshing] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const isMobile = useMobile()
-  const { toast } = useToast()
+  // Using direct Sonner API for immediate notifications
 
   // Filter emails based on selected folder
   const filteredEmails = useMemo(() => {
@@ -77,11 +77,7 @@ export default function EmailClient() {
       }
     } catch (error) {
       console.error("Error fetching email detail:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load email details. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load email details. Please try again.")
     } finally {
       setEmailDetailLoading(false)
     }
@@ -113,6 +109,7 @@ export default function EmailClient() {
     const email = emails.find((e) => e.id.toString() === emailId)
     if (!email) return
 
+    toast.success("Email deleted successfully! 🗑️")
     setDeleting(true)
     try {
       const result = await deleteMail([email.graph_id])
@@ -123,25 +120,12 @@ export default function EmailClient() {
         if (selectedEmail?.id.toString() === emailId) {
           setSelectedEmail(null)
         }
-
-        toast({
-          title: "Email Deleted",
-          description: "The email has been successfully deleted.",
-        })
       } else {
-        toast({
-          title: "Delete Failed",
-          description: result.message || "Failed to delete email. Please try again.",
-          variant: "destructive",
-        })
+        toast.error(result.message || "Failed to delete email. Please try again.")
       }
     } catch (error) {
       console.error("Error deleting email:", error)
-      toast({
-        title: "Delete Failed",
-        description: "An error occurred while deleting the email.",
-        variant: "destructive",
-      })
+      toast.error("An error occurred while deleting the email.")
     } finally {
       setDeleting(false)
     }
@@ -150,14 +134,11 @@ export default function EmailClient() {
   // Handle delete all emails
   const handleDeleteAllEmails = async () => {
     if (filteredEmails.length === 0) {
-      toast({
-        title: "No Emails",
-        description: "There are no emails to delete.",
-        variant: "destructive",
-      })
+      toast.error("There are no emails to delete.")
       return
     }
 
+    toast.success(`All ${filteredEmails.length} email${filteredEmails.length > 1 ? "s" : ""} deleted successfully! 🗑️`)
     setDeleting(true)
     try {
       const graphIds = filteredEmails.map((email) => email.graph_id)
@@ -172,25 +153,12 @@ export default function EmailClient() {
         if (selectedEmail && emailIds.includes(selectedEmail.id.toString())) {
           setSelectedEmail(null)
         }
-
-        toast({
-          title: "All Emails Deleted",
-          description: `Successfully deleted ${filteredEmails.length} email${filteredEmails.length > 1 ? "s" : ""}.`,
-        })
       } else {
-        toast({
-          title: "Delete Failed",
-          description: result.message || "Failed to delete all emails. Please try again.",
-          variant: "destructive",
-        })
+        toast.error(result.message || "Failed to delete all emails. Please try again.")
       }
     } catch (error) {
       console.error("Error deleting all emails:", error)
-      toast({
-        title: "Delete Failed",
-        description: "An error occurred while deleting all emails.",
-        variant: "destructive",
-      })
+      toast.error("An error occurred while deleting all emails.")
     } finally {
       setDeleting(false)
     }
@@ -199,14 +167,11 @@ export default function EmailClient() {
   // Handle delete selected emails
   const handleDeleteSelectedEmails = async (graphIds: string[]) => {
     if (graphIds.length === 0) {
-      toast({
-        title: "No Emails Selected",
-        description: "Please select emails to delete.",
-        variant: "destructive",
-      })
+      toast.error("Please select emails to delete.")
       return
     }
 
+    toast.success(`${graphIds.length} email${graphIds.length > 1 ? "s" : ""} deleted successfully! 🗑️`)
     setDeleting(true)
     try {
       const result = await deleteAllMails(graphIds)
@@ -219,25 +184,12 @@ export default function EmailClient() {
         if (selectedEmail && graphIds.includes(selectedEmail.graph_id)) {
           setSelectedEmail(null)
         }
-
-        toast({
-          title: "Selected Emails Deleted",
-          description: `Successfully deleted ${graphIds.length} email${graphIds.length > 1 ? "s" : ""}.`,
-        })
       } else {
-        toast({
-          title: "Delete Failed",
-          description: result.message || "Failed to delete selected emails. Please try again.",
-          variant: "destructive",
-        })
+        toast.error(result.message || "Failed to delete selected emails. Please try again.")
       }
     } catch (error) {
       console.error("Error deleting selected emails:", error)
-      toast({
-        title: "Delete Failed",
-        description: "An error occurred while deleting selected emails.",
-        variant: "destructive",
-      })
+      toast.error("An error occurred while deleting selected emails.")
     } finally {
       setDeleting(false)
     }
@@ -247,10 +199,7 @@ export default function EmailClient() {
   const handleSendEmail = (email: any) => {
     // In a real app, you would send the email to a server
     // For now, we'll just show a toast notification
-    toast({
-      title: "Email Sent",
-      description: `Your email to ${email.to} has been sent.`,
-    })
+    toast.success(`Your email to ${email.to} has been sent.`)
   }
 
   const handleRefreshEmails = async () => {
