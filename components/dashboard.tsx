@@ -387,9 +387,10 @@ export default function Dashboard() {
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
             <BarChart3 className="w-4 h-4 text-white" />
           </div>
-          <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent leading-relaxed">
             Short Summary
           </span>
+
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -427,7 +428,7 @@ export default function Dashboard() {
                     <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
                       <Activity className="w-4 h-4 text-white" />
                     </div>
-                    <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                    <span className="leading-relaxed bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
                       Analytics & Insights
                     </span>
                   </CardTitle>
@@ -526,9 +527,10 @@ export default function Dashboard() {
                     <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
                       <Zap className="w-4 h-4 text-white" />
                     </div>
-                    <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                      Upcoming Events with Smart Suggestions
-                    </span>
+<span className="leading-relaxed bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+  Upcoming Events
+</span>
+
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
