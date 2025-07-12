@@ -382,7 +382,7 @@ export default function Dashboard() {
     transition={{ duration: 0.8, delay: 0.4 }}
   >
     <Card className="h-full bg-gradient-to-br from-blue-50/80 to-cyan-50/80 backdrop-blur-sm border-blue-200/50 shadow-xl hover:shadow-2xl transition-all duration-500 border-2">
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
             <BarChart3 className="w-4 h-4 text-white" />
@@ -403,9 +403,9 @@ export default function Dashboard() {
         ) : (
           <>
             {apiData?.short_message && (
-              <div className="mt-4 p-3 bg-white/60 rounded-lg">
+              <div className="p-3 bg-white/60 rounded-lg">
                 <ScrollArea className="h-[280px]">
-                  <p className="text-xs text-gray-600 leading-relaxed pr-4">{apiData.short_message[0]}</p>
+                  <p className="text-s text-gray-900 leading-relaxed pr-4">{apiData.short_message[0]}</p>
                 </ScrollArea>
               </div>
             )}

@@ -244,7 +244,7 @@ const folderItems = [
                             >
                               <p
                                 className={cn(
-                                  "font-medium text-xs whitespace-nowrap",
+                                  "font-medium text-s whitespace-nowrap",
                                   isSelected ? "text-white dark:text-gray-900" : "text-gray-700 dark:text-gray-300"
                                 )}
                               >
